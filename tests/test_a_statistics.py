@@ -9,10 +9,10 @@ __author__ = 'Sidorov D.V.'
 
 
 import pytest
-from models import PsqlDriver, get_session,User, Lecture
+from models import User, Lecture, db
 
 
-def setup():
+def test_1(initialize):
     users = [
         {
             'id': 1,
@@ -36,32 +36,32 @@ def setup():
             'author': 2,
             'reporter': 2,
             'change_date': '2019-02-21',
-            'status': 'created'
+            'status': 'create'
         },
         {
             'title': 'Правописание',
             'author': 3,
             'reporter': 1,
             'change_date': '2019-02-21',
-            'status': 'created'
+            'status': 'create'
         },
         {
             'title': 'Естествознание',
             'author': 1,
             'reporter': 3,
             'change_date': '2019-02-21',
-            'status': 'created'
+            'status': 'create'
         },
         {
             'title': 'Геология',
             'author': 1,
             'reporter': 1,
             'change_date': '2019-02-21',
-            'status': 'created'
+            'status': 'create'
         }
     ]
 
-    session = get_session()
+    session = db.session()
     for user in users:
         session.add(User(**user))
         session.commit()
@@ -75,3 +75,5 @@ def setup():
     print([user.asdict() for user in _users])
     print([lecture.asdict() for lecture in _lectures])
     session.close()
+
+

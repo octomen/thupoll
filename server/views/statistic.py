@@ -2,6 +2,7 @@
 
 from flask import Blueprint
 from flask import request, abort
+from flask import jsonify
 
 from ..views.base import BaseView
 from ..models import User, Lecture, db
@@ -16,7 +17,7 @@ class StatisticView(BaseView):
 
     def _create_data(self):
         session = db.session
-        created = session.query(Lecture).filter(Lecture.status == 'created').\
+        created = session.query(Lecture).filter(Lecture.status == 'create').\
             order_by(Lecture.change_date).\
             limit(THEMES_LIMIT).all()
         planning = session.query(Lecture).filter(Lecture.status == 'planning'). \
@@ -32,13 +33,13 @@ class StatisticView(BaseView):
             order_by(Lecture.change_date). \
             limit(THEMES_LIMIT).all()
         session.close()
-        return dict(
+        return jsonify(dict(
             created=[obj.asdict() for obj in created],
             planning=[obj.asdict() for obj in planning],
             preparing=[obj.asdict() for obj in preparing],
             discarded=[obj.asdict() for obj in discarded],
             done=[obj.asdict() for obj in done]
-        )
+        ))
 
     def get(self, *args, **kwargs):
         try:

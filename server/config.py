@@ -2,9 +2,9 @@
 
 
 DATABASE = dict(
-    dbname="tp_db",
-    user="tp_user",
-    password="test",
+    dbname="postgres",
+    user="postgres",
+    password="",
     host='127.0.0.1',
     port='5432'
 )
