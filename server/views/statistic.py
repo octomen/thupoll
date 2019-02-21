@@ -12,10 +12,9 @@ blueprint = Blueprint('thursday', __name__)
 
 class StatisticView(BaseView):
 
-    object_class = None
     template_name = ''
 
-    def _create_context(self, data=None):
+    def _create_data(self):
         session = db.session
         created = session.query(Lecture).filter(Lecture.status == 'created').\
             order_by(Lecture.change_date).\
@@ -29,16 +28,22 @@ class StatisticView(BaseView):
         discarded = session.query(Lecture).filter(Lecture.status == 'discarded'). \
             order_by(Lecture.change_date). \
             limit(THEMES_LIMIT).all()
+        done = session.query(Lecture).filter(Lecture.status == 'done'). \
+            order_by(Lecture.change_date). \
+            limit(THEMES_LIMIT).all()
         session.close()
-        return {
+        return dict(
+            created=[obj.asdict() for obj in created],
+            planning=[obj.asdict() for obj in planning],
+            preparing=[obj.asdict() for obj in preparing],
+            discarded=[obj.asdict() for obj in discarded],
+            done=[obj.asdict() for obj in done]
+        )
 
-        }
-
-    def get(self):
+    def get(self, *args, **kwargs):
         try:
-            context = self._create_context()
-            return self._render_template(context)
-        except Exception as e:  # TODO
+            return self._create_data()
+        except Exception as e:
             abort(404)
 
     def post(self, *args, **kwargs):

@@ -12,7 +12,13 @@ lecture_status = ENUM(
 )
 
 
-class User(db.Model):
+class DictMixin:
+
+    def asdict(self):
+        return self._asdict()
+
+
+class User(db.Model, DictMixin):
 
     __tablename__ = 'user'
 
@@ -21,13 +27,13 @@ class User(db.Model):
     age = Column(Integer)
 
 
-class Lecture(db.Model):
+class Lecture(db.Model, DictMixin):
 
     __tablename__ = 'lecture'
 
     id = Column(Integer, primary_key=True)
     title = Column(String(150))
-    # author = Column(Integer, ForeignKey(User))
-    # reporter = Column(Integer, ForeignKey(User))
+    author = Column(Integer, ForeignKey('user.id'))
+    reporter = Column(Integer, ForeignKey('user.id'))
     change_date = Column(Date)
     status = Column(lecture_status)
