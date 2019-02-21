@@ -4,6 +4,8 @@ from flask import Blueprint
 
 from views.base import BaseView
 from models import User, Lecture, get_session
+from flask import request, abort
+from config import THEMES_LIMIT
 
 blueprint = Blueprint('thursday', __name__)
 
@@ -15,7 +17,18 @@ class StatisticView(BaseView):
 
     def _create_context(self, data=None):
         session = get_session()
-        select = session.query(Lecture).filter(Product.url.is_(None), getattr(Product, field).is_(None)).limit(limit).all()
+        created = session.query(Lecture).filter(Lecture.status == 'created').\
+            order_by(Lecture.change_date).\
+            limit(THEMES_LIMIT).all()
+        planning = session.query(Lecture).filter(Lecture.status == 'planning'). \
+            order_by(Lecture.change_date). \
+            limit(THEMES_LIMIT).all()
+        preparing = session.query(Lecture).filter(Lecture.status == 'preparing'). \
+            order_by(Lecture.change_date). \
+            limit(THEMES_LIMIT).all()
+        discarded = session.query(Lecture).filter(Lecture.status == 'discarded'). \
+            order_by(Lecture.change_date). \
+            limit(THEMES_LIMIT).all()
         session.close()
         return {
 
