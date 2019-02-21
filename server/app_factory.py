@@ -7,7 +7,11 @@ from .models import db
 from .config import DATABASE as DB
 
 
-def init_app():
+def entrypoint_db():
+    init_app(mode='db')
+
+
+def init_app(mode='app'):
     app = Flask(__name__)
     app.register_blueprint(statistic_blueprint, url_prefix='/distribution')
 
@@ -22,9 +26,12 @@ def init_app():
 
     app.app_context().push()
     db.init_app(app)
-    db.create_all()  # TODO to flask-migrate
 
-    return app
+    if mode == 'db':
+        db.create_all()  # TODO to flask-migrate
+
+    if mode == 'app':
+        return app
 
 
 # TODO setup logging

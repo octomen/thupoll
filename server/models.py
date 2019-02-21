@@ -1,6 +1,3 @@
-# coding: utf-8
-
-
 from sqlalchemy import Column, Integer, String, Boolean, Text, Date, ForeignKey
 from sqlalchemy.dialects.postgresql import ENUM
 
