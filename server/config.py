@@ -16,5 +16,4 @@ REGISTER_URL = '/register'
 
 
 AUTHORIZATION_CODE_URL = '/authorize'
-
 THEMES_LIMIT = 5

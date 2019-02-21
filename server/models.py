@@ -55,10 +55,16 @@ class PsqlDriver(object):
             self.connection.rollback()
 
 
-lecture_status = ENUM('create', 'preparing', 'planning', 'discarded', 'done', name='lecture_status')
+class DictMixin:
+
+    def asdict(self):
+        return self._asdict()
 
 
-class User(Base):
+lecture_status = ENUM('created', 'preparing', 'planning', 'discarded', 'done', name='lecture_status')
+
+
+class User(Base, DictMixin):
 
     __tablename__ = 'user'
 
@@ -67,7 +73,7 @@ class User(Base):
     age = Column(Integer)
 
 
-class Lecture(Base):
+class Lecture(Base, DictMixin):
 
     __tablename__ = 'lecture'
 
