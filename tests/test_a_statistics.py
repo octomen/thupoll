@@ -8,7 +8,6 @@
 __author__ = 'Sidorov D.V.'
 
 
-import pytest
 from models import User, Lecture, db
 
 
@@ -75,5 +74,3 @@ def test_1(initialize):
     print([user.asdict() for user in _users])
     print([lecture.asdict() for lecture in _lectures])
     session.close()
-
-

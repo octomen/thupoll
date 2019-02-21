@@ -15,7 +15,9 @@ lecture_status = ENUM(
 class DictMixin:
 
     def asdict(self):
-        return self._asdict()
+        return {
+            'id': self.id
+        }
 
 
 class User(db.Model, DictMixin):
