@@ -18,7 +18,8 @@ def init_app(mode='app'):
     db_url = os.environ.get('DB_URL')
     if not db_url:
         app.config['SQLALCHEMY_DATABASE_URI'] = (
-            'postgresql://{user}:{password}@{host}:{port}/{dbname}'.format(user=DB["user"], password=DB["password"], host=DB["host"], port=DB["port"], dbname=DB["dbname"])
+            'postgresql://{user}:{password}@'
+            '{host}:{port}/{dbname}'.format(**DB)
         )
     else:
         app.config['SQLALCHEMY_DATABASE_URI'] = db_url

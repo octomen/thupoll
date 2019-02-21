@@ -61,5 +61,9 @@ def home():
     from flask import jsonify
     return jsonify(ok='ok')
 
+@blueprint.route("/poll/lst")
+def poll_lst():
+    return 
+
 
 blueprint.add_url_rule('/statistic', view_func=StatisticView.as_view('statistic'))
