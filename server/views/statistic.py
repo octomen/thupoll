@@ -63,7 +63,7 @@ def home():
     return jsonify(ok='ok')
 
 
-@blueprint.route("poll_lst", methods=["POST"])
+@blueprint.route("poll/lst", methods=["GET", "POST"])
 @_access_control_allow_origin
 def poll_lst():
     return jsonify({
@@ -71,6 +71,10 @@ def poll_lst():
             "blah1",
             "blah2",
             "blah3",
+            "blah4",
+            "blah4",
+            "blahsdfhth4",
+            "blah4",
             "blah4",
         ]
     })
