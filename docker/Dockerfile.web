@@ -7,10 +7,10 @@ RUN apt-get update && \
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache -r requirements.txt
 
-ENV PYTHONPATH=/polls_api
+ENV PYTHONPATH=/server
 
 COPY entrypoint_web.sh $PYTHONPATH/entrypoint_web.sh
-COPY polls_api $PYTHONPATH/polls_api
+COPY server $PYTHONPATH/server
 COPY tests $PYTHONPATH/tests
 
 WORKDIR /$PYTHONPATH

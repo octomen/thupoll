@@ -1,11 +1,11 @@
 # coding: utf-8
 
 from flask import Blueprint
-
-from views.base import BaseView
-from models import User, Lecture, get_session
 from flask import request, abort
-from config import THEMES_LIMIT
+
+from ..views.base import BaseView
+from ..models import User, Lecture, db
+from ..config import THEMES_LIMIT
 
 blueprint = Blueprint('thursday', __name__)
 
@@ -16,7 +16,7 @@ class StatisticView(BaseView):
     template_name = ''
 
     def _create_context(self, data=None):
-        session = get_session()
+        session = db.session
         created = session.query(Lecture).filter(Lecture.status == 'created').\
             order_by(Lecture.change_date).\
             limit(THEMES_LIMIT).all()
@@ -38,7 +38,7 @@ class StatisticView(BaseView):
         try:
             context = self._create_context()
             return self._render_template(context)
-        except (TemplateNotFound, DataValidateException, ):
+        except Exception as e:  # TODO
             abort(404)
 
     def post(self, *args, **kwargs):
