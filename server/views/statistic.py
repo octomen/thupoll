@@ -1,8 +1,11 @@
 # coding: utf-8
 
+from flask import Blueprint
 
 from views.base import BaseView
 from models import User, Lecture, get_session
+
+blueprint = Blueprint('thursday', __name__)
 
 
 class StatisticView(BaseView):
@@ -32,3 +35,6 @@ class StatisticView(BaseView):
         if request.method == 'POST':
             return self.post(*args, **kwargs)
         return self.get(*args, **kwargs)
+
+
+blueprint.add_url_rule('/statistic', view_func=StatisticView.as_view('statistic'))

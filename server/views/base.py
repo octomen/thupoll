@@ -2,11 +2,11 @@
 
 
 from flask.views import View
-from flask import request, render_template, abort
+from flask import request, render_template, abort, Blueprint
 from flask.templating import TemplateNotFound
 
 
-class BaseView(object):
+class BaseView(View):
 
     object_class = None
     template_name = ''
@@ -25,6 +25,3 @@ class BaseView(object):
     def dispatch_request(self):
         context = {}
         return self._render_template(context)
-
-
-
