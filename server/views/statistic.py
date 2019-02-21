@@ -16,7 +16,7 @@ class StatisticView(BaseView):
 
     def _create_data(self):
         session = db.session
-        created = session.query(Lecture).filter(Lecture.status == 'created').\
+        created = session.query(Lecture).filter(Lecture.status == 'create').\
             order_by(Lecture.change_date).\
             limit(THEMES_LIMIT).all()
         planning = session.query(Lecture).filter(Lecture.status == 'planning'). \
