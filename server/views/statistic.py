@@ -55,4 +55,10 @@ class StatisticView(BaseView):
         return self.get(*args, **kwargs)
 
 
+@blueprint.route('/')
+def home():
+    from flask import jsonify
+    return jsonify(ok='ok')
+
+
 blueprint.add_url_rule('/statistic', view_func=StatisticView.as_view('statistic'))
