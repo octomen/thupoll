@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# database
+*.db
+*.sqlite3
+init_pgsql.sql
+
+*.bak
+
+# Distribution / packaging
+.Python
+.idea/
+venv/
+venv
+.venv/
+.venv
+
+# settings
+
+# log files
+*.log
+test/.cache/
+
+# Django
+*.egg-info
+*.pot
+*.py[co]
+.tox/
+__pycache__
+MANIFEST
+dist/
+docs/_build/
+docs/locale/
+node_modules/
+tests/coverage_html/
+tests/.coverage
+build/
+tests/report/
+**/bootstrap
+
+.env

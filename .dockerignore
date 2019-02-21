@@ -1,0 +1,17 @@
+.dockerignore
+db.sqlite3
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv
+.venv
+.tox
+.coverage
+.coverage.*
+.cache
+coverage.xml
+*,cover
+*.log
+.git
