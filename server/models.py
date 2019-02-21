@@ -5,8 +5,7 @@ import psycopg2
 import psycopg2.extras
 from psycopg2 import connect
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Boolean, Text, Date, ForeignKey
 from sqlalchemy.orm.session import Session
 from sqlalchemy import create_engine, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
@@ -76,4 +75,5 @@ class Lecture(Base):
     title = Column(String(150))
     author = Column(Integer, ForeignKey(User))
     reporter = Column(Integer, ForeignKey(User))
+    change_date = Column(Date)
     status = Column(lecture_status)
