@@ -13,7 +13,7 @@ def entrypoint_db():
 
 def init_app(mode='app'):
     app = Flask(__name__)
-    app.register_blueprint(statistic_blueprint, url_prefix='/distribution')
+    app.register_blueprint(statistic_blueprint, url_prefix='/')
 
     db_url = os.environ.get('DB_URL')
     if not db_url:
