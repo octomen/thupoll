@@ -1,0 +1,6 @@
+flask
+gunicorn
+pytest
+sqlalchemy
+flask-sqlalchemy
+flask-migrate
