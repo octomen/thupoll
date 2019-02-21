@@ -7,6 +7,7 @@ from flask import jsonify
 from ..views.base import BaseView
 from ..models import User, Lecture, db
 from ..config import THEMES_LIMIT
+from ..utils import _access_control_allow_origin
 
 blueprint = Blueprint('thursday', __name__)
 
@@ -57,13 +58,22 @@ class StatisticView(BaseView):
 
 
 @blueprint.route('/')
+@_access_control_allow_origin
 def home():
-    from flask import jsonify
     return jsonify(ok='ok')
 
-@blueprint.route("/poll/lst")
+
+@blueprint.route("poll_lst", methods=["POST"])
+@_access_control_allow_origin
 def poll_lst():
-    return 
+    return jsonify({
+        "themes": [
+            "blah1",
+            "blah2",
+            "blah3",
+            "blah4",
+        ]
+    })
 
 
 blueprint.add_url_rule('/statistic', view_func=StatisticView.as_view('statistic'))
