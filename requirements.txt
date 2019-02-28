@@ -4,5 +4,9 @@ pytest
 sqlalchemy
 flask-sqlalchemy
 flask-migrate
+requests
 psycopg2
 pytest
+wsgi_intercept
+environs
+
