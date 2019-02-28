@@ -39,10 +39,11 @@ class People(_BaseModel):
         onupdate=sa.func.now(),
         nullable=False,
     )
+    role_id = sa.Column(sa.Integer, nullable=False)
+    role = relationship(Role)
 
 
 class Theme(_BaseModel):
-
     __tablename__ = 'theme'
 
     id = sa.Column(sa.Integer, primary_key=True)
