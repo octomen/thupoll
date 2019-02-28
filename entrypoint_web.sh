@@ -8,8 +8,8 @@ done
 
 echo "PostgreSQL started"
 
-echo 'create db'
-python -m server.init_db
-echo 'create ok'
+echo 'run migrations...'
+cd server ; flask db upgrade ; cd -
+echo 'migrations ok'
 
-exec gunicorn -w 4 -b 0.0.0.0:5000 "server.app_factory:init_app()"
+exec gunicorn -w 4 -b 0.0.0.0:5000 --access-logfile - --error-logfile - "server.app_factory:init_app()"
