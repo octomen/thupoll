@@ -17,7 +17,7 @@ services:
     entrypoint:
       ./entrypoint_web.sh
     volumes:
-      - "./server:/server/server"
+      - "./server:/thupoll/server"
 
   db:
     image: postgres:11
@@ -41,7 +41,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.web
     depends_on:
-      - db
+      - test_db
     environment:
       - TEST_DB_URL=postgresql://postgres@test_db:5432/postgres
     tty:
@@ -49,7 +49,7 @@ services:
     entrypoint:
       pytest -v
     volumes:
-      - "./server:/server/server"
+      - "./server:/thupoll/server"
 
   test_db:
     image: postgres:11

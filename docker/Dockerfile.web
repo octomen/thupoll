@@ -7,7 +7,7 @@ RUN apt-get update && \
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache -r requirements.txt
 
-ENV PYTHONPATH=/server
+ENV PYTHONPATH=/thupoll
 ENV FLASK_APP=app_factory:init_app
 
 COPY entrypoint_web.sh $PYTHONPATH/entrypoint_web.sh
