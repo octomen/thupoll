@@ -18,10 +18,24 @@ services:
     volumes:
       - "./server:/server/server"
 
+  # run container for executing tests
+  test:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    depends_on:
+      - db
+    environment:
+      - DB_URL=postgresql://postgres@db:5432/postgres
+    tty: true
+    command: bash
+    volumes:
+      - "./server:/server/server"
+
   db:
     image: postgres:11
     ports:  # FIXME for tesing only; remove for production
-      - 5432:5432
+      - 10501:5432
 #    environment:
 #      POSTGRES_USER: postgres
 #      POSTGRES_DB: postgres
