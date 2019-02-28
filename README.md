@@ -17,3 +17,9 @@ docker-compose up -d test
 # run tests
 docker-compose exec test pytest
 ```
+
+or
+
+```bash
+docker-compose run --rm --entrypoint "pytest -v" test 
+```

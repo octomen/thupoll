@@ -47,7 +47,7 @@ services:
     tty:
       true
     entrypoint:
-      pytest -v
+      bash
     volumes:
       - "./server:/thupoll/server"
 
