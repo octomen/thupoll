@@ -4,6 +4,5 @@ pytest
 sqlalchemy
 flask-sqlalchemy
 flask-migrate
-# psycopg2
-psycopg2-binary
+psycopg2
 pytest

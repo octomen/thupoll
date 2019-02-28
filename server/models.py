@@ -21,7 +21,6 @@ class DictMixin:
 
 
 class User(db.Model, DictMixin):
-
     __tablename__ = 'user'
 
     id = Column(Integer, primary_key=True)
