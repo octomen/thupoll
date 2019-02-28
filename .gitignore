@@ -16,6 +16,7 @@ venv/
 venv
 .venv/
 .venv
+.python-version
 
 # settings
 
