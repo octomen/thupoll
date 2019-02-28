@@ -26,8 +26,8 @@ class ThemeStatus(_BaseModel):
     name = sa.Column(sa.String)
 
 
-class User(_BaseModel):
-    __tablename__ = 'user'
+class People(_BaseModel):
+    __tablename__ = 'people'
 
     id = sa.Column(sa.Integer, primary_key=True)
     telegram_login = sa.Column(sa.String, nullable=False)
@@ -63,8 +63,8 @@ class Theme(_BaseModel):
         nullable=False,
     )
 
-    author = relationship(User, back_populates="author")
-    reporter = relationship(User, back_populates="reporter")
+    author = relationship(People, back_populates="author")
+    reporter = relationship(People, back_populates="reporter")
     status = relationship(ThemeStatus, back_populates="status")
 
 
@@ -113,7 +113,7 @@ class Volume(_BaseModel):
         onupdate=sa.func.now(),
     )
     themepoll_id = sa.Column(sa.Integer, nullable=False,)
-    user_id = sa.Column(sa.Integer, nullable=False,)
+    people_id = sa.Column(sa.Integer, nullable=False,)
 
     themepoll = relationship(ThemePoll, back_populates="themepoll")
-    user = relationship(User, back_populates="user")
+    people = relationship(People, back_populates="people")

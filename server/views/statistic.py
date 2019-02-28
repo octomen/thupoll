@@ -5,7 +5,7 @@ from flask import request, abort
 from flask import jsonify
 
 from ..views.base import BaseView
-from ..models import User, Theme, db
+from ..models import People, Theme, db
 from ..config import THEMES_LIMIT
 from ..utils import _access_control_allow_origin
 
