@@ -63,7 +63,7 @@ def home():
     return jsonify(ok='ok')
 
 
-@blueprint.route("poll/lst", methods=["GET", "POST"])
+@blueprint.route("/poll/lst", methods=["GET", "POST"])
 @_access_control_allow_origin
 def poll_lst():
     return jsonify({
