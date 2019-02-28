@@ -5,7 +5,7 @@ from flask import request, abort
 from flask import jsonify
 
 from ..views.base import BaseView
-from ..models import User, Lecture, db
+from ..models import User, Theme, db
 from ..config import THEMES_LIMIT
 from ..utils import _access_control_allow_origin
 
@@ -18,20 +18,20 @@ class StatisticView(BaseView):
 
     def _create_data(self):
         session = db.session
-        created = session.query(Lecture).filter(Lecture.status == 'create').\
-            order_by(Lecture.change_date).\
+        created = session.query(Theme).filter(Theme.status == 'create').\
+            order_by(Theme.change_date).\
             limit(THEMES_LIMIT).all()
-        planning = session.query(Lecture).filter(Lecture.status == 'planning'). \
-            order_by(Lecture.change_date). \
+        planning = session.query(Theme).filter(Theme.status == 'planning'). \
+            order_by(Theme.change_date). \
             limit(THEMES_LIMIT).all()
-        preparing = session.query(Lecture).filter(Lecture.status == 'preparing'). \
-            order_by(Lecture.change_date). \
+        preparing = session.query(Theme).filter(Theme.status == 'preparing'). \
+            order_by(Theme.change_date). \
             limit(THEMES_LIMIT).all()
-        discarded = session.query(Lecture).filter(Lecture.status == 'discarded'). \
-            order_by(Lecture.change_date). \
+        discarded = session.query(Theme).filter(Theme.status == 'discarded'). \
+            order_by(Theme.change_date). \
             limit(THEMES_LIMIT).all()
-        done = session.query(Lecture).filter(Lecture.status == 'done'). \
-            order_by(Lecture.change_date). \
+        done = session.query(Theme).filter(Theme.status == 'done'). \
+            order_by(Theme.change_date). \
             limit(THEMES_LIMIT).all()
         session.close()
         return jsonify(dict(
