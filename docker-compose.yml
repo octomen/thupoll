@@ -14,7 +14,6 @@ services:
       - test_db
     environment:
       - DB_URL=postgresql://postgres@db:5432/postgres
-      - TEST_DB_URL=postgresql://postgres@test_db:5432/postgres
     entrypoint:
       ./entrypoint_web.sh
     volumes:
@@ -27,11 +26,6 @@ services:
     expose:
       - "5432"
 
-  test_db:
-    image: postgres:11
-    expose:
-      - "5432"
-
   nginx:
     build:
       context: .
@@ -40,6 +34,28 @@ services:
       - 80:5000
     depends_on:
       - web
+
+  # run container for executing tests
+  test:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    depends_on:
+      - db
+    environment:
+      - TEST_DB_URL=postgresql://postgres@test_db:5432/postgres
+    tty:
+      true
+    entrypoint:
+      pytest -v
+    volumes:
+      - "./server:/server/server"
+
+  test_db:
+    image: postgres:11
+    expose:
+      - "5432"
+
 
 volumes:
   psql_data:

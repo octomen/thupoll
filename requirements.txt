@@ -9,4 +9,3 @@ psycopg2
 pytest
 wsgi_intercept
 environs
-

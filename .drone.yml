@@ -1,0 +1,74 @@
+
+# RUN container when DB in test would be needed (and add wait_db.sh script !!)
+#services:
+#  postgres:
+#    image: postgres
+#    environment:
+#      POSTGRES_PASSWORD: password
+#      POSTGRES_USER: user
+#      POSTGRES_DB: db
+
+pipeline:
+  build-image-for-test:
+    image: docker
+    dry_run: true
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    commands:
+      - docker build -t octoman/thupoll-web-test - < docker/Dockerfile.web
+
+  test:
+    image: octoman/thupoll-web-test
+    commands:
+      - pytest
+
+  build-web:
+    image: plugins/docker
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    when:
+      branch:
+      - master
+    dockerfile: docker/Dockerfile.web
+    settings:
+      repo: octoman/thupoll-web
+      tags: master
+
+  build-nginx:
+    image: plugins/docker
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    when:
+      branch:
+      - master
+    dockerfile: docker/Dockerfile.nginx
+    settings:
+      repo: octoman/thupoll-nginx
+      tags: master
+
+#  release:
+#    image: ...
+#    ...
+
+  telegram:
+    image: appleboy/drone-telegram
+    token: 681363431:AAFHIgM3H_EtQ4DBanhplEgBbLvEP7tBIo0
+    to: -233093379
+    format: html
+    when:
+      status:
+      - success
+      - failure
+    message: >
+      {{#success build.status}}
+        <a href='http://142.93.158.124:8090/octomen/thupoll/{{build.number}}'>build</a> succeeded. Good job.
+      {{else}}
+        <a href='http://142.93.158.124:8090/octomen/thupoll/{{build.number}}'>build</a> failed. Fix me please.
+      {{/success}}
+
