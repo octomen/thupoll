@@ -1,4 +1,4 @@
-# coding: utf-8
+import logging
 
 from flask import Blueprint
 from flask import request, abort
@@ -10,6 +10,7 @@ from ..config import THEMES_LIMIT
 from ..utils import _access_control_allow_origin
 
 blueprint = Blueprint('thursday', __name__)
+logger = logging.getLogger(__name__)
 
 
 class StatisticView(BaseView):
@@ -60,6 +61,7 @@ class StatisticView(BaseView):
 @blueprint.route('/')
 @_access_control_allow_origin
 def home():
+    logger.debug('test message')
     return jsonify(ok='ok')
 
 
