@@ -1,4 +1,4 @@
-[![Build Status](http://142.93.158.124:8090/api/badges/octomen/thui/status.svg)](http://142.93.158.124:8090/octomen/thui)
+[![Build Status](http://thupoll.liinda.ru:8090/api/badges/octomen/thupoll/status.svg)](http://thupoll.liinda.ru:8090/octomen/thupoll)
 
 ThuPoll
 
