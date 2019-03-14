@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask
 from flask_migrate import Migrate
 
@@ -7,6 +9,8 @@ from .setings import env
 
 
 def init_app(db_url=env.db_url):
+    __setup_logging()
+
     app = Flask(__name__)
     app.register_blueprint(statistic_blueprint, url_prefix='/')
 
@@ -18,4 +22,8 @@ def init_app(db_url=env.db_url):
     return app
 
 
-# TODO setup logging
+def __setup_logging():
+    logging.basicConfig(
+        level=env.log_level,
+        format='[%(asctime)s] [%(process)d] [%(levelname)s] %(message)s',
+    )

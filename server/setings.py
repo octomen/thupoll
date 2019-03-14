@@ -12,5 +12,9 @@ class Environ(Env):
     def test_db_url(self):
         return self('TEST_DB_URL', self.DEFAULT_DB)
 
+    @property
+    def log_level(self):
+        return self('LOG_LEVEL', 'INFO')
+
 
 env = Environ()
