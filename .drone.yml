@@ -67,9 +67,9 @@ pipeline:
       - failure
     message: >
       {{#success build.status}}
-        ✔️ <a href='http://159.203.4.5:8090/octomen/thupoll/{{build.number}}'>build</a> succeeded. Good job.
+        ✔️ <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> succeeded. Good job.
       {{else}}
-        ✖️ <a href='http://159.203.4.5:8090/octomen/thupoll/{{build.number}}'>build</a> failed. Fix me please.
+        ✖️ <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> failed. Fix me please.
       {{/success}}
 
   telegram-PR:
