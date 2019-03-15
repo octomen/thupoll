@@ -8,6 +8,18 @@ ThuPoll
 Install docker
 
 
+## Run server locally
+
+1. Run server
+
+```bash
+docker-compose up
+```
+
+2. Check [url](http://localhost:5000) 
+
+
+
 ## Testing 
 
 ```bash

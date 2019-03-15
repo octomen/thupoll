@@ -1,14 +1,14 @@
 import pytest
 from wsgi_intercept.interceptor import RequestsInterceptor
 
-from server.app_factory import init_app
-from server.models import db
-from server.setings import env
+from thupoll.app_factory import init_app
+from thupoll.models import db
+from thupoll.settings import env
 
 
 @pytest.fixture
 def app():
-    app_ = init_app(db_url=env.test_db_url)
+    app_ = init_app(db_url=env.db_url)
     db.drop_all()
     db.create_all()
     yield app_

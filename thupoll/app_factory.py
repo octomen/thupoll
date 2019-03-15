@@ -3,9 +3,9 @@ import logging
 from flask import Flask
 from flask_migrate import Migrate
 
-from .views.statistic import blueprint as statistic_blueprint
-from .models import db
-from .setings import env
+from thupoll.views.statistic import blueprint as statistic_blueprint
+from thupoll.models import db
+from thupoll.settings import env
 
 
 def init_app(db_url=env.db_url):

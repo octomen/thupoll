@@ -1,19 +1,16 @@
 FROM python:3
 
-RUN apt-get update && \
-    apt-get install -y net-tools netcat && \
-    rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache -r requirements.txt
 
-ENV PYTHONPATH=/thupoll
+ENV PYTHONPATH=/app
 ENV FLASK_APP=app_factory:init_app
 
-COPY entrypoint_web.sh $PYTHONPATH/entrypoint_web.sh
-COPY server $PYTHONPATH/server
+COPY entrypoint.sh $PYTHONPATH/entrypoint.sh
+COPY scripts $PYTHONPATH/scripts
+COPY thupoll $PYTHONPATH/thupoll
 COPY tests $PYTHONPATH/tests
 
 WORKDIR /$PYTHONPATH
 
-CMD sh entrypoint_web.sh
+CMD sh entrypoint.sh

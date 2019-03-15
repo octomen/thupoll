@@ -1,12 +1,12 @@
 
 # RUN container when DB in test would be needed (and add wait_db.sh script !!)
-#services:
-#  postgres:
-#    image: postgres
-#    environment:
-#      POSTGRES_PASSWORD: password
-#      POSTGRES_USER: user
-#      POSTGRES_DB: db
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: user
+      POSTGRES_DB: db
 
 pipeline:
   test:
@@ -17,8 +17,10 @@ pipeline:
       - master
     environment:
       - PYTHONPATH=/drone/src
+      - DB_URL=postgresql://user:password@localhost:5432/db
     commands:
       - pip install --no-cache -r requirements.txt
+      - python3 scripts/wait_for_postgres.py
       - pytest
 
 #  build-web:
