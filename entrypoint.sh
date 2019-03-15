@@ -30,7 +30,7 @@ start_api() {
 # Start specified service
 case ${SERVICE_NAME-'<empty>'} in
     api)
-        start_dialogger_api
+        start_api
         ;;
     bash)
         bash
