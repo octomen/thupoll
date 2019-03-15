@@ -9,18 +9,25 @@ services:
       POSTGRES_DB: db
 
 pipeline:
+  flake8:
+    image: python:3
+    when:
+      event: push
+    environment:
+      - PYTHONPATH=/drone/src
+    commands:
+      - pip install --no-cache flake8
+      - flake8
   test:
     image: python:3
     when:
       event: push
-      branch:
-      - master
     environment:
       - PYTHONPATH=/drone/src
-      - DB_URL=postgresql://user:password@localhost:5432/db
+      - DB_URL=postgresql://user:password@postgres:5432/db
     commands:
       - pip install --no-cache -r requirements.txt
-      - python3 scripts/wait_for_postgres.py
+      - python3 scripts/wait_for_postgres.py $DB_URL
       - pytest
 
 #  build-web:
@@ -37,20 +44,6 @@ pipeline:
 #      repo: octoman/thupoll-web
 #      tags: master
 #
-#  build-nginx:
-#    image: plugins/docker
-#    username:
-#      from_secret: docker_username
-#    password:
-#      from_secret: docker_password
-#    when:
-#      branch:
-#      - master
-#    dockerfile: docker/Dockerfile.nginx
-#    settings:
-#      repo: octoman/thupoll-nginx
-#      tags: master
-
 #  release:
 #    image: ...
 #    ...

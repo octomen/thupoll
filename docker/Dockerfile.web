@@ -4,7 +4,7 @@ COPY requirements.txt requirements.txt
 RUN pip install --no-cache -r requirements.txt
 
 ENV PYTHONPATH=/app
-ENV FLASK_APP=app_factory:init_app
+ENV FLASK_APP=thupoll.app_factory:init_app
 
 COPY entrypoint.sh $PYTHONPATH/entrypoint.sh
 COPY scripts $PYTHONPATH/scripts

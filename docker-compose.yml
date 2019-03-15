@@ -47,7 +47,7 @@ services:
     tty:
       true
     volumes:
-      - "./thupoll:/app/thupoll"
+      - "./:/app/"
 
   test_db:
     image: postgres:11

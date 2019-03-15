@@ -4,10 +4,10 @@ from flask import Blueprint
 from flask import request, abort
 from flask import jsonify
 
-from ..views.base import BaseView
-from ..models import People, Theme, db
-from ..config import THEMES_LIMIT
-from ..utils import _access_control_allow_origin
+from thupoll.views.base import BaseView
+from thupoll.models import Theme, db
+from thupoll.config import THEMES_LIMIT
+from thupoll.utils import _access_control_allow_origin
 
 blueprint = Blueprint('thursday', __name__)
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class StatisticView(BaseView):
     def get(self, *args, **kwargs):
         try:
             return self._create_data()
-        except Exception as e:
+        except Exception:
             abort(404)
 
     def post(self, *args, **kwargs):
@@ -83,4 +83,5 @@ def poll_lst():
     })
 
 
-blueprint.add_url_rule('/statistic', view_func=StatisticView.as_view('statistic'))
+blueprint.add_url_rule(
+    '/statistic', view_func=StatisticView.as_view('statistic'))
