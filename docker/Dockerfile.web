@@ -6,6 +6,7 @@ RUN pip install --no-cache -r requirements.txt
 ENV PYTHONPATH=/app
 ENV FLASK_APP=thupoll.app_factory:init_app
 
+COPY migrations $PYTHONPATH/migrations
 COPY entrypoint.sh $PYTHONPATH/entrypoint.sh
 COPY scripts $PYTHONPATH/scripts
 COPY thupoll $PYTHONPATH/thupoll

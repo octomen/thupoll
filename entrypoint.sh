@@ -14,8 +14,7 @@ init_db() {
     wait_for_postgres
 
     echo "Run migrations..."
-    # TODO init DB + migrate DB
-    cd thupoll ; flask db upgrade ; cd -
+    flask db upgrade
     echo "Migrations ok"
 }
 
