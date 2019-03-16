@@ -35,3 +35,33 @@ or
 ```bash
 docker-compose run --rm --entrypoint "pytest -v" test 
 ```
+
+  
+    
+## Migration-usecase
+0) Start and connect to test server
+    ```bash
+    docker-compose up -d test
+    docker-compose exec test bash
+    ```
+    
+   Next commands execute in this shell - in this `test`-container
+    
+1) Refesh your local DB according structure in project
+
+    ```bash
+    flask db upgrade
+    ```
+
+2) Change DB-structure in `thupoll/models.py`
+
+3) Autogenerate migration
+    ```bash
+    flask db migrate
+    ```
+
+4) Migrate local DB:
+
+    ```bash
+    flask db upgrade
+    ```

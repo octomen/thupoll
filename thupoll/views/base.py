@@ -2,8 +2,7 @@
 
 
 from flask.views import View
-from flask import request, render_template, abort, Blueprint
-from flask.templating import TemplateNotFound
+from flask import render_template
 
 
 class BaseView(View):
