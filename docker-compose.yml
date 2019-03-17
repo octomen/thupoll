@@ -29,6 +29,7 @@ services:
       - SERVICE_NAME=api
     volumes:
       - "./thupoll:/app/thupoll"
+    restart: always
 
   db:
     image: postgres:11
@@ -36,6 +37,7 @@ services:
       - psql_data:/var/lib/postgresql/data
     expose:
       - "5432"
+    restart: always
 
   ##########
   #  TEST  #

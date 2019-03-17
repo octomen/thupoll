@@ -18,6 +18,7 @@ pipeline:
     commands:
       - pip install --no-cache flake8
       - flake8
+
   test:
     image: python:3
     when:
@@ -30,23 +31,23 @@ pipeline:
       - python3 scripts/wait_for_postgres.py $DB_URL
       - pytest
 
-#  build-web:
-#    image: plugins/docker
-#    username:
-#      from_secret: docker_username
-#    password:
-#      from_secret: docker_password
-#    when:
-#      branch:
-#      - master
-#    dockerfile: docker/Dockerfile.web
-#    settings:
-#      repo: octoman/thupoll-web
-#      tags: master
-#
-#  release:
-#    image: ...
-#    ...
+  release:
+    image: appleboy/drone-ssh
+    when:
+      event: push
+      branch: master
+    host:
+      from_secret: deploy_host
+    username:
+      from_secret: deploy_user
+    secrets: [ ssh_key ]
+    port: 22
+    script:
+      - set -e
+      - cd thupoll
+      - git pull -f
+      - docker-compose build base web
+      - docker-compose up -d web
 
   telegram-push:
     image: appleboy/drone-telegram
@@ -57,14 +58,17 @@ pipeline:
     format: html
     when:
       event: push
+      branch:
+        exclude:
+        - master
       status:
       - success
       - failure
     message: >
       {{#success build.status}}
-        ✔️ <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> succeeded. Good job.
+        💚 <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> succeeded. Good job.
       {{else}}
-        ✖️ <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> failed. Fix me please.
+        🛑️ <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> failed. Fix me please.
       {{/success}}
 
   telegram-PR:
@@ -78,4 +82,25 @@ pipeline:
       event: pull_request
     message: >
       👉 New or update PR for <a href='{{commit.link}}'>commit</a> from {{commit.author}}
+
+  telegram-release:
+    image: appleboy/drone-telegram
+    token:
+      from_secret: telegram_token
+    to:
+      from_secret: telegram_notification_chat_id
+    format: html
+    when:
+      event: push
+      branch:
+      - master
+      status:
+      - success
+      - failure
+    message: >
+      {{#success build.status}}
+        🔔️ Release succeeded. Good job. Check <a href='http://thupoll.liinda.ru:5000'>url</a>
+      {{else}}
+        ⛔ ALARM! Release failed. Check <a href='http://thupoll.liinda.ru:5000'>url</a>
+      {{/success}}
 
