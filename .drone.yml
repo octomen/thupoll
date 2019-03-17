@@ -26,7 +26,7 @@ pipeline:
       - PYTHONPATH=/drone/src
       - DB_URL=postgresql://user:password@postgres:5432/db
     commands:
-      - pip install --no-cache -r requirements.txt
+      - pip install --no-cache -r requirements/common.txt && pip install --no-cache -r requirements/test.txt
       - python3 scripts/wait_for_postgres.py $DB_URL
       - pytest
 
