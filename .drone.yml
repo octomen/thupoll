@@ -101,8 +101,8 @@ pipeline:
       - failure
     message: >
       {{#success build.status}}
-        🔔️ Release succeeded. Good job. Check <a href='http://thupoll.liinda.ru:5000'>url</a>
+        🔔️ Release succeeded. Good job. Check <a href='http://thupoll.liinda.ru:5000/ping'>url</a>
       {{else}}
-        ⛔ ALARM! Release failed. Check <a href='http://thupoll.liinda.ru:5000'>url</a>
+        ⛔ ALARM! Release failed. Check <a href='http://thupoll.liinda.ru:5000/ping'>url</a>
       {{/success}}
 
