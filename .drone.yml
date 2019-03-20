@@ -26,9 +26,11 @@ pipeline:
     environment:
       - PYTHONPATH=/drone/src
       - DB_URL=postgresql://user:password@postgres:5432/db
+      - FLASK_APP=thupoll.app_factory:init_app
     commands:
       - pip install --no-cache -r requirements/common.txt && pip install --no-cache -r requirements/test.txt
       - python3 scripts/wait_for_postgres.py $DB_URL
+      - flask db upgrade
       - pytest
 
   release:

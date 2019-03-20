@@ -23,6 +23,7 @@ venv
 # log files
 *.log
 test/.cache/
+.pytest_cache/
 
 # Django
 *.egg-info

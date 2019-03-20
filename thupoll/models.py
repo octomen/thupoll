@@ -1,3 +1,4 @@
+import datetime
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
@@ -5,30 +6,45 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+freeze_tables = {'role', 'theme_status'}
+
+
 class _BaseModel(db.Model):
     __abstract__ = True
 
-    def asdict(self):  # TODO выпилить это
-        return {'id': self.id}
+    def marshall(self) -> dict:
+        raise NotImplementedError
 
 
 class Role(_BaseModel):
     __tablename__ = 'role'
 
-    OCTOPUS = 'octopus'
-    INHABITANT = 'inhabitant'
+    OCTOPUS = 1
+    INHABITANT = 2
 
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String, nullable=True, unique=True)
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            name=self.name,
+        )
 
 
 class ThemeStatus(_BaseModel):
     __tablename__ = 'theme_status'
 
-    NEW = 'new'
+    NEW = 1
 
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String, nullable=True, unique=True)
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            name=self.name,
+        )
 
 
 class People(_BaseModel):
@@ -39,15 +55,29 @@ class People(_BaseModel):
         sa.Integer, sa.ForeignKey('role.id'), nullable=False)
     telegram_login = sa.Column(sa.String, nullable=False, unique=True)
     created_date = sa.Column(
-        sa.DateTime, server_default=sa.func.now(), nullable=False)
+        sa.DateTime,
+        default=lambda: datetime.datetime.now(),
+        server_default=sa.func.now(),
+        nullable=False,
+    )
     change_date = sa.Column(
         sa.DateTime,
+        default=lambda: datetime.datetime.now(),
         server_default=sa.func.now(),
         onupdate=sa.func.now(),
         nullable=False,
     )
     # relations
-    role = relationship(Role)
+    role = relationship(Role, lazy='joined')  # type: Role
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            role_id=self.role_id,
+            telegram=self.telegram_login,
+            created=self.created_date,
+            updated=self.change_date,
+        )
 
 
 class Theme(_BaseModel):
@@ -60,7 +90,7 @@ class Theme(_BaseModel):
     author_id = sa.Column(
         sa.Integer, sa.ForeignKey('people.id'), nullable=False)
     reporter_id = sa.Column(
-        sa.Integer, sa.ForeignKey('people.id'), nullable=False)
+        sa.Integer, sa.ForeignKey('people.id'))
     status_id = sa.Column(
         sa.Integer,
         sa.ForeignKey('theme_status.id'),
@@ -69,19 +99,33 @@ class Theme(_BaseModel):
     )
     created_date = sa.Column(
         sa.DateTime,
-        server_default=sa.func.now(),
+        default=lambda: datetime.datetime.now(),
         nullable=False,
     )
     change_date = sa.Column(
         sa.DateTime,
-        server_default=sa.func.now(),
+        default=lambda: datetime.datetime.now(),
         onupdate=sa.func.now(),
         nullable=False,
     )
     # relations
-    author = relationship(People, foreign_keys=[author_id])
-    reporter = relationship(People, foreign_keys=[reporter_id])
-    status = relationship(ThemeStatus)
+    author = relationship(
+        People, foreign_keys=[author_id], lazy='joined')  # type: People
+    reporter = relationship(
+        People, foreign_keys=[reporter_id], lazy='joined')  # type: People
+    status = relationship(ThemeStatus, lazy='joined')  # type: ThemeStatus
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            title=self.title,
+            description=self.description,
+            author=self.author.marshall(),
+            reporter=self.reporter.marshall() if self.reporter else {},
+            status=self.status.marshall(),
+            created=self.created_date,
+            updated=self.change_date,
+        )
 
 
 class Poll(_BaseModel):
@@ -93,15 +137,26 @@ class Poll(_BaseModel):
     meet_date = sa.Column(sa.DateTime, nullable=False)
     created_date = sa.Column(
         sa.DateTime,
+        default=lambda: datetime.datetime.now(),
         server_default=sa.func.now(),
         nullable=False,
     )
     change_date = sa.Column(
         sa.DateTime,
+        default=lambda: datetime.datetime.now(),
         server_default=sa.func.now(),
         onupdate=sa.func.now(),
         nullable=False,
     )
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            expire_date=self.expire_date,
+            meet_date=self.meet_date,
+            created=self.created_date,
+            updated=self.change_date,
+        )
 
 
 class ThemePoll(_BaseModel):
@@ -111,8 +166,8 @@ class ThemePoll(_BaseModel):
     theme_id = sa.Column(sa.Integer, sa.ForeignKey('theme.id'), nullable=False)
     poll_id = sa.Column(sa.Integer, sa.ForeignKey('poll.id'), nullable=False)
 
-    theme = relationship(Theme)
-    poll = relationship(Poll)
+    theme = relationship(Theme, lazy='joined')  # type: Theme
+    poll = relationship(Poll, lazy='joined')  # type: Poll
 
     __table_args__ = (
         sa.Index(
@@ -120,6 +175,13 @@ class ThemePoll(_BaseModel):
             'poll_id', 'theme_id', unique=True
         ),
     )
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            theme=self.theme.marshall(),
+            poll=self.poll.marshall(),
+        )
 
 
 class Volume(_BaseModel):
@@ -129,11 +191,13 @@ class Volume(_BaseModel):
 
     created_date = sa.Column(
         sa.DateTime,
+        default=lambda: datetime.datetime.now(),
         server_default=sa.func.now(),
         nullable=False,
     )
     change_date = sa.Column(
         sa.DateTime,
+        default=lambda: datetime.datetime.now(),
         server_default=sa.func.now(),
         onupdate=sa.func.now(),
     )
@@ -142,8 +206,8 @@ class Volume(_BaseModel):
     people_id = sa.Column(
         sa.Integer, sa.ForeignKey('people.id'), nullable=False)
 
-    themepoll = relationship(ThemePoll)
-    people = relationship(People)
+    themepoll = relationship(ThemePoll, lazy='joined')  # type: ThemePoll
+    people = relationship(People, lazy='joined')  # type: People
 
     __table_args__ = (
         sa.Index(
@@ -151,3 +215,12 @@ class Volume(_BaseModel):
             'people_id', 'themepoll_id', unique=True
         ),
     )
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            theme=self.theme.marshall(),
+            poll=self.poll.marshall(),
+            themepoll=self.themepoll.marshall(),
+            people=self.people.marshall(),
+        )

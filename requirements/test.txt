@@ -2,3 +2,4 @@ requests
 pytest
 wsgi_intercept
 flake8
+freezegun
