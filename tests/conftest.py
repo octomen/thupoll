@@ -47,10 +47,10 @@ def db_session(app):
 
 
 @pytest.fixture(scope='function')
-def people(db_session):
+def people(db_session, faker):
     people = People(
         role_id=Role.OCTOPUS,
-        telegram_login='octopus',
+        telegram_login=faker.name(),
     )
     db_session.add(people)
     db_session.commit()
@@ -58,10 +58,10 @@ def people(db_session):
 
 
 @pytest.fixture(scope='function')
-def theme(db_session, people: People):
+def theme(db_session, faker, people: People):
     theme = Theme(
-        title='Super Theme!',
-        description='Wow...',
+        title=faker.text(max_nb_chars=50),
+        description=faker.text(max_nb_chars=50),
         author_id=people.id,
         reporter_id=people.id,
     )

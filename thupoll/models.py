@@ -1,4 +1,6 @@
 import datetime
+import uuid
+
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
@@ -114,6 +116,8 @@ class Theme(_BaseModel):
     reporter = relationship(
         People, foreign_keys=[reporter_id], lazy='joined')  # type: People
     status = relationship(ThemeStatus, lazy='joined')  # type: ThemeStatus
+    polls = relationship(
+        "Poll", secondary="theme_poll", back_populates="themes")
 
     def marshall(self) -> dict:
         return dict(
@@ -147,6 +151,11 @@ class Poll(_BaseModel):
         server_default=sa.func.now(),
         onupdate=sa.func.now(),
         nullable=False,
+    )
+    themes = relationship(
+        "Theme",
+        secondary="theme_poll",
+        back_populates="polls"
     )
 
     def marshall(self) -> dict:
@@ -224,3 +233,20 @@ class Volume(_BaseModel):
             themepoll=self.themepoll.marshall(),
             people=self.people.marshall(),
         )
+
+
+class Token(_BaseModel):
+    __tablename__ = "token"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    people_id = sa.Column(
+        sa.Integer, sa.ForeignKey("people.id"), nullable=False)
+    value = sa.Column(
+        sa.String,
+        nullable=False,
+        default=lambda: str(uuid.uuid4()),
+        unique=True,
+    )
+    expire = sa.Column(sa.DateTime, nullable=False)
+
+    people = relationship(People)

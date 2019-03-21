@@ -24,9 +24,12 @@ services:
       - db
       - test_db
     environment:
-      - DB_URL=postgresql://postgres@db:5432/postgres
-      - LOG_LEVEL=INFO
-      - SERVICE_NAME=api
+      SERVICE_NAME: api
+      DB_URL: postgresql://postgres@db:5432/postgres
+      LOG_LEVEL: INFO
+      TOKEN_TTL_DAYS: 10
+      BOT_TELEGRAM_TOKEN: "${BOT_TELEGRAM_TOKEN}"
+      BOT_PROXY_URL: "${BOT_PROXY_URL}"
     volumes:
       - "./thupoll:/app/thupoll"
     restart: always
@@ -50,11 +53,14 @@ services:
       context: .
       dockerfile: docker/test/Dockerfile
     depends_on:
+      - base
       - test_db
     environment:
-      - DB_URL=postgresql://postgres@test_db:5432/postgres
-      - LOG_LEVEL=DEBUG
-      - SERVICE_NAME=bash
+      DB_URL: postgresql://postgres@test_db:5432/postgres
+      LOG_LEVEL: DEBUG
+      BOT_TELEGRAM_TOKEN: 123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      BOT_PROXY_URL: https://some_fake_proxy
+      SERVICE_NAME: bash
     tty:
       true
     volumes:

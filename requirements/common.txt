@@ -6,3 +6,5 @@ flask-migrate
 psycopg2
 environs
 webargs
+python-telegram-bot==12.0.0b1
+pysocks

@@ -1,0 +1,2 @@
+class BotAuthException(Exception):
+    pass
