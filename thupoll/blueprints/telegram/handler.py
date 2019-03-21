@@ -1,4 +1,4 @@
-import telegram
+import telegram  # noqa: F401
 
 from thupoll.blueprints.telegram import logger
 from thupoll.blueprints.telegram.auth import AuthAdapter

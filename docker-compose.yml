@@ -56,8 +56,6 @@ services:
     environment:
       DB_URL: postgresql://postgres@test_db:5432/postgres
       LOG_LEVEL: DEBUG
-      BOT_TELEGRAM_TOKEN: 123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-      BOT_PROXY_URL: https://some_fake_proxy
       SERVICE_NAME: bash
     tty:
       true
