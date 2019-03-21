@@ -28,8 +28,6 @@ services:
       DB_URL: postgresql://postgres@db:5432/postgres
       LOG_LEVEL: INFO
       TOKEN_TTL_DAYS: 10
-      BOT_TELEGRAM_TOKEN: "${BOT_TELEGRAM_TOKEN}"
-      BOT_PROXY_URL: "${BOT_PROXY_URL}"
     volumes:
       - "./thupoll:/app/thupoll"
     restart: always

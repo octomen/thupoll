@@ -27,3 +27,5 @@ class Environ(Env):
 
 
 env = Environ()
+
+env.read_env()
