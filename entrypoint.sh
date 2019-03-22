@@ -20,8 +20,6 @@ init_db() {
 
 
 start_api() {
-    init_db
-
     # start server
     exec gunicorn -w 4 -b 0.0.0.0:5000 --access-logfile - --error-logfile - "thupoll.app_factory:init_app()"
 }
@@ -29,7 +27,12 @@ start_api() {
 # Start specified service
 case ${SERVICE_NAME-'<empty>'} in
     api)
+        init_db
         start_api
+        ;;
+    test)
+        init_db
+        bash
         ;;
     bash)
         bash

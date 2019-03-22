@@ -1,10 +1,11 @@
 import logging
-from flask import Blueprint, jsonify, abort
+from flask import Blueprint, jsonify, abort, g
 from webargs import fields
 from webargs.flaskparser import use_args
 
 from thupoll import validators
 from thupoll.models import db, Theme, ThemeStatus
+from thupoll.utils import for_auth
 
 
 blueprint = Blueprint('themes', __name__)
@@ -30,10 +31,10 @@ def get_one(theme_id: int):
 
 
 @blueprint.route('/', methods=['POST'], strict_slashes=False)
+@for_auth
 @use_args({
     'title': fields.Str(required=True),
     'description': fields.Str(),
-    'author_id': fields.Int(),  # TODO author_id - from current user session
     'reporter_id': fields.Int(),
     'status_id': fields.Int(),
 })
@@ -41,7 +42,7 @@ def create(args):
     title = args.get('title')
     desc = args.get('description')
     reporter_id = args.get('reporter_id')
-    author_id = args.get('author_id')
+    author_id = g.people.id
     status_id = args.get('status_id') or ThemeStatus.NEW
     logger.info(
         'Themes. Creating new (title %s, desc %s, reporter %s, status %s',
@@ -71,15 +72,17 @@ def create(args):
 
 
 @blueprint.route('/<int:theme_id>', methods=['DELETE'])
+@for_auth
 def delete(theme_id):
     logger.info('Themes. Delete %s', theme_id)
 
     theme = db.session.query(Theme).get(theme_id)
 
-    # TODO check only author can delete
-
     if not theme:
         abort(404)
+
+    if not (g.people.is_admin() or g.people.id == theme.author_id):
+        abort(403)
 
     db.session.delete(theme)
 

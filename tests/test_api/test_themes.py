@@ -16,8 +16,8 @@ def test__marshall(theme):
     )
 
 
-def test__delete__404_when_theme_not_exists(client):
-    r = client.delete('/themes/1')
+def test__delete__404_when_theme_not_exists(client, user_headers):
+    r = client.delete('/themes/1', headers=user_headers)
     assert r.status_code == 404, r.get_json()
 
 
@@ -44,21 +44,32 @@ def test__all__one_theme(client, theme):
     assert r.get_json() == [marshall(theme)]
 
 
-def test__create__correct(client, people):
+def test__create__correct(client, people, user_headers):
+    expected_author_id = people.id
     title = 'title'
     description = 'description'
     r = client.post('/themes', json=dict(
         title=title,
         description=description,
-        author_id=people.id,
-    ))
-    assert r.status_code == 200, r.get_json()
-    assert r.get_json() == client.get(
-        '/themes/{}'.format(r.get_json()['id'])).get_json()
+    ), headers=user_headers)
+    created_theme = r.get_json()
+    assert r.status_code == 200, created_theme
+    getted_theme = client.get('/themes/{}'.format(
+        created_theme['id'])).get_json()
+    assert created_theme == getted_theme
+    # check binding to user which doing request
+    assert created_theme['author']['id'] == expected_author_id
 
 
-def test__delete__correct(client, theme):
+def test__delete__correct_by_author(client, theme, user_headers):
     assert db.session.query(Theme).count() == 1
-    r = client.delete('/themes/{}'.format(theme.id))
+    r = client.delete('/themes/{}'.format(theme.id), headers=user_headers)
+    assert r.status_code == 200, r.get_json()
+    assert db.session.query(Theme).count() == 0
+
+
+def test__delete__correct_by_admin(client, theme, admin_headers):
+    assert db.session.query(Theme).count() == 1
+    r = client.delete('/themes/{}'.format(theme.id), headers=admin_headers)
     assert r.status_code == 200, r.get_json()
     assert db.session.query(Theme).count() == 0

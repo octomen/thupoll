@@ -56,7 +56,7 @@ services:
     environment:
       DB_URL: postgresql://postgres@test_db:5432/postgres
       LOG_LEVEL: DEBUG
-      SERVICE_NAME: bash
+      SERVICE_NAME: test
     tty:
       true
     volumes:

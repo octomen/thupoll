@@ -3,7 +3,9 @@ import pytest
 from freezegun import freeze_time
 
 from thupoll.app_factory import init_app
-from thupoll.models import db, freeze_tables, People, Role, Theme
+from thupoll.models import (
+    db, freeze_tables, People, Role, Theme, Session, Token
+)
 from thupoll.settings import env
 
 
@@ -27,6 +29,16 @@ def client(app):
     yield app.test_client()
 
 
+@pytest.fixture
+def user_headers(user_session):
+    return {'Authentication': user_session.value}
+
+
+@pytest.fixture
+def admin_headers(admin_session):
+    return {'Authentication': admin_session.value}
+
+
 @pytest.fixture(scope='function', autouse=True)
 def truncate(db_session):
     for table in db.metadata.tables:
@@ -36,7 +48,6 @@ def truncate(db_session):
 
 @pytest.fixture
 def db_session(app):
-    db.create_all()
     yield db.session
     db.session.close()
 
@@ -49,12 +60,51 @@ def db_session(app):
 @pytest.fixture(scope='function')
 def people(db_session, faker):
     people = People(
+        role_id=Role.INHABITANT,
+        telegram_login=faker.name(),
+    )
+    db_session.add(people)
+    db_session.commit()
+    yield people
+
+
+@pytest.fixture(scope='function')
+def admin(db_session, faker):
+    people = People(
         role_id=Role.OCTOPUS,
         telegram_login=faker.name(),
     )
     db_session.add(people)
     db_session.commit()
     yield people
+
+
+@pytest.fixture
+def token(db_session, people: People):
+    token = Token(
+        people=people,
+        people_id=people.id,
+        expire=datetime.datetime.now() + datetime.timedelta(days=1),
+    )
+    db_session.add(token)
+    db_session.commit()
+    yield token
+
+
+@pytest.fixture(scope='function')
+def user_session(db_session, people: People):
+    session = Session(people=people, people_id=people.id)
+    db_session.add(session)
+    db_session.commit()
+    yield session
+
+
+@pytest.fixture(scope='function')
+def admin_session(db_session, admin: People):
+    session = Session(people=admin, people_id=admin.id)
+    db_session.add(session)
+    db_session.commit()
+    yield session
 
 
 @pytest.fixture(scope='function')

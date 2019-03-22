@@ -72,6 +72,9 @@ class People(_BaseModel):
     # relations
     role = relationship(Role, lazy='joined')  # type: Role
 
+    def is_admin(self):
+        return self.role_id == Role.OCTOPUS
+
     def marshall(self) -> dict:
         return dict(
             id=self.id,
@@ -249,4 +252,21 @@ class Token(_BaseModel):
     )
     expire = sa.Column(sa.DateTime, nullable=False)
 
-    people = relationship(People)
+    people = relationship(People, lazy='joined')  # type: People
+
+
+class Session(_BaseModel):
+    __tablename__ = "session"
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    people_id = sa.Column(
+        sa.Integer, sa.ForeignKey("people.id"), nullable=False)
+    value = sa.Column(
+        sa.String,
+        nullable=False,
+        default=lambda: str(uuid.uuid4()),
+        unique=True,
+    )
+    expire = sa.Column(sa.DateTime)
+
+    people = relationship(People, lazy='joined')  # type: People
