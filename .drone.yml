@@ -81,11 +81,12 @@ pipeline:
       from_secret: telegram_token
     to:
       from_secret: telegram_notification_chat_id
-    format: html
+    format: markdown
     when:
       event: pull_request
+    photo: ${DRONE_COMMIT_AUTHOR_AVATAR}
     message: >
-      👉 New or update PR for <a href='{{commit.link}}'>commit</a> from {{commit.author}}
+      👉 New or update [PR](${DRONE_REPO_LINK}/pull/${DRONE_PULL_REQUEST}) from ${DRONE_COMMIT_AUTHOR}
 
   telegram-release:
     image: appleboy/drone-telegram
@@ -103,8 +104,8 @@ pipeline:
       - failure
     message: >
       {{#success build.status}}
-        🔔️ Release succeeded. Good job. Check <a href='http://thupoll.liinda.ru:5000/ping'>url</a>
+        🔔️ Release succeeded. Good job. Check <a href='http://thupoll.liinda.ru/api/ping'>url</a>
       {{else}}
-        ⛔ ALARM! Release failed. Check <a href='http://thupoll.liinda.ru:5000/ping'>url</a>
+        ⛔ ALARM! Release failed. Check <a href='http://thupoll.liinda.ru/api/ping'>url</a>
       {{/success}}
 
