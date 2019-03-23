@@ -52,7 +52,7 @@ pipeline:
       - git fetch
       - git reset HEAD --hard
       - git checkout ${DRONE_COMMIT_BRANCH}
-      - git reset origin/${DRONE_COMMIT_BRANCH}
+      - git reset --hard origin/${DRONE_COMMIT_BRANCH}
       - docker-compose build base web
       - docker-compose up -d web
 
