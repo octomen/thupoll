@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def login(args):
     if 'Telegram' in (getattr(request.user_agent, 'string', None) or ''):
         logger.info('It is a Telegram')
-        return 200
+        return '', 204
     # find token
     token = db.session.query(Token).filter(
         Token.value == args.get('token')
