@@ -50,9 +50,9 @@ pipeline:
       - source ~/.bashrc
       - cd thupoll
       - git fetch
-      - git reset --hard
+      - git reset HEAD --hard
       - git checkout ${DRONE_COMMIT_BRANCH}
-      - git pull -f origin/${DRONE_COMMIT_BRANCH}
+      - git reset origin/${DRONE_COMMIT_BRANCH}
       - docker-compose build base web
       - docker-compose up -d web
 
