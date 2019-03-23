@@ -49,7 +49,9 @@ pipeline:
       - set -e
       - source ~/.bashrc
       - cd thupoll
-      - git pull -f
+      - git fetch
+      - git checkout ${DRONE_COMMIT_BRANCH}
+      - git reset --hard origin/master
       - docker-compose build base web
       - docker-compose up -d web
 
