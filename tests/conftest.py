@@ -1,5 +1,6 @@
 import datetime
 import pytest
+import random
 from freezegun import freeze_time
 
 from thupoll.app_factory import init_app
@@ -61,7 +62,8 @@ def db_session(app):
 def people(db_session, faker):
     people = People(
         role_id=Role.INHABITANT,
-        telegram_login=faker.name(),
+        telegram_login=random.randint(10000, 99999),
+        name=faker.name(),
     )
     db_session.add(people)
     db_session.commit()
@@ -72,7 +74,8 @@ def people(db_session, faker):
 def admin(db_session, faker):
     people = People(
         role_id=Role.OCTOPUS,
-        telegram_login=faker.name(),
+        telegram_login=random.randint(10000, 99999),
+        name=faker.name(),
     )
     db_session.add(people)
     db_session.commit()

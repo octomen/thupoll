@@ -85,6 +85,7 @@ def delete(theme_id):
         abort(403)
 
     db.session.delete(theme)
+    db.session.commit()
 
     logger.info('Themes. Deleted %s', theme.id)
 

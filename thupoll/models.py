@@ -56,6 +56,7 @@ class People(_BaseModel):
     role_id = sa.Column(
         sa.Integer, sa.ForeignKey('role.id'), nullable=False)
     telegram_login = sa.Column(sa.String, nullable=False, unique=True)
+    name = sa.Column(sa.String, nullable=False)
     created_date = sa.Column(
         sa.DateTime,
         default=lambda: datetime.datetime.now(),
@@ -79,6 +80,7 @@ class People(_BaseModel):
         return dict(
             id=self.id,
             role_id=self.role_id,
+            name=self.name,
             telegram=self.telegram_login,
             created=self.created_date,
             updated=self.change_date,
