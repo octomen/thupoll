@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
     'token': fields.Str(required=True),
 }, error_status_code=401)
 def login(args):
-    if 'Telegram' in getattr(request.user_agent, 'string', ''):
+    if 'Telegram' in (getattr(request.user_agent, 'string', None) or ''):
         logger.info('It is a Telegram')
         return 200
     # find token

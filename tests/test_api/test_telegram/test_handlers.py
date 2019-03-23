@@ -42,5 +42,5 @@ def test_generate_invite_link(handler, faker):
             link=generate_invite_link(url, token)
         ),
         parse_mode=telegram.ParseMode.MARKDOWN,
-        # disable_web_page_preview=True,
+        disable_web_page_preview=True,
     )
