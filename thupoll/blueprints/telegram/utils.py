@@ -5,7 +5,7 @@ def generate_invite_link(host, token):
     :param token: user token
     :return:
     """
-    return "{host}?token={token}".format(
+    return "{host}/login?token={token}".format(
         host=host,
         token=token
     )

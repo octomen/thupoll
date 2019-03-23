@@ -37,8 +37,8 @@ pipeline:
     image: appleboy/drone-ssh
     when:
       event: push
-      branch:
-      - master
+#      branch:
+#      - master
     host:
       from_secret: deploy_host
     username:
@@ -56,27 +56,27 @@ pipeline:
       - docker-compose build base web
       - docker-compose up -d web
 
-  telegram-push:
-    image: appleboy/drone-telegram
-    token:
-      from_secret: telegram_token
-    to:
-      from_secret: telegram_notification_chat_id
-    format: html
-    when:
-      event: push
-      branch:
-        exclude:
-        - master
-      status:
-      - success
-      - failure
-    message: >
-      {{#success build.status}}
-        💚 Thupoll: <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> succeeded. Good job.
-      {{else}}
-        🛑️ Thupoll: <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> failed. Fix me please.
-      {{/success}}
+#  telegram-push:
+#    image: appleboy/drone-telegram
+#    token:
+#      from_secret: telegram_token
+#    to:
+#      from_secret: telegram_notification_chat_id
+#    format: html
+#    when:
+#      event: push
+#      branch:
+#        exclude:
+#        - master
+#      status:
+#      - success
+#      - failure
+#    message: >
+#      {{#success build.status}}
+#        💚 Thupoll: <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> succeeded. Good job.
+#      {{else}}
+#        🛑️ Thupoll: <a href='http://thupoll.liinda.ru:8090/octomen/thupoll/{{build.number}}'>build</a> failed. Fix me please.
+#      {{/success}}
 
   telegram-PR:
     image: appleboy/drone-telegram
@@ -91,23 +91,23 @@ pipeline:
     message: >
       👉 Thupoll: New or update [PR](${DRONE_REPO_LINK}/pull/${DRONE_PULL_REQUEST}) from ${DRONE_COMMIT_AUTHOR}
 
-  telegram-release:
-    image: appleboy/drone-telegram
-    token:
-      from_secret: telegram_token
-    to:
-      from_secret: telegram_notification_chat_id
-    format: html
-    when:
-      event: push
-      branch:
-      - master
-      status:
-      - success
-      - failure
-    message: >
-      {{#success build.status}}
-        🔔️ Thupoll: Release succeeded. Good job. Check <a href='http://thupoll.liinda.ru/api/ping'>url</a>
-      {{else}}
-        ⛔ Thupoll: ALARM! Release failed. Check <a href='http://thupoll.liinda.ru/api/ping'>url</a>
-      {{/success}}
+#  telegram-release:
+#    image: appleboy/drone-telegram
+#    token:
+#      from_secret: telegram_token
+#    to:
+#      from_secret: telegram_notification_chat_id
+#    format: html
+#    when:
+#      event: push
+#      branch:
+#      - master
+#      status:
+#      - success
+#      - failure
+#    message: >
+#      {{#success build.status}}
+#        🔔️ Thupoll: Release succeeded. Good job. Check <a href='http://thupoll.liinda.ru/api/ping'>url</a>
+#      {{else}}
+#        ⛔ Thupoll: ALARM! Release failed. Check <a href='http://thupoll.liinda.ru/api/ping'>url</a>
+#      {{/success}}

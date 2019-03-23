@@ -9,3 +9,4 @@ def mount(hook: TelegramHook):
         env.thupoll_url, env("TOKEN_TTL_DAYS", 10))
 
     hook.mount_command("invite", invite_handler.invite)
+    hook.mount_command("start", invite_handler.invite)

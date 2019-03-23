@@ -14,7 +14,7 @@ class InviteHandler:
         "Вы не являетесь зарегистрированным ползователем. "
         "Обратитесь к администратору."
     )
-    LINK_TEMPLATE = "Привет, {name}! Твоя ссылка: {link}"
+    LINK_TEMPLATE = "Привет, {name}! Твоя [ссылка]({link})"
 
     def __init__(self, url, token_ttl_days):
         self.url = url
@@ -49,7 +49,11 @@ class InviteHandler:
             id=user.id,
             name=user.full_name,
         ))
-        message.reply_text(self.LINK_TEMPLATE.format(
-            name=user.full_name,
-            link=generate_invite_link(self.url, token),
-        ))
+        bot.send_message(
+            chat_id=message.chat_id,
+            text=self.LINK_TEMPLATE.format(
+                name=user.full_name,
+                link=generate_invite_link(self.url, token),
+            ),
+            parse_mode=telegram.ParseMode.MARKDOWN,
+        )
