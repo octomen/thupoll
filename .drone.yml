@@ -108,4 +108,3 @@ pipeline:
       {{else}}
         ⛔ ALARM! Release failed. Check <a href='http://thupoll.liinda.ru/api/ping'>url</a>
       {{/success}}
-

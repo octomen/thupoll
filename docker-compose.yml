@@ -22,7 +22,6 @@ services:
       - 5000
     depends_on:
       - db
-      - test_db
     environment:
       SERVICE_NAME: api
       DB_URL: postgresql://postgres@db:5432/postgres

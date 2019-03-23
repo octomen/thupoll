@@ -1,4 +1,6 @@
+import datetime
 import logging
+import sqlalchemy as sa
 
 from flask import Blueprint, make_response, abort, jsonify
 from webargs import fields
@@ -17,7 +19,13 @@ logger = logging.getLogger(__name__)
 def login(args):
     # find token
     token = db.session.query(Token).filter(
-        Token.value == args.get('token')).one_or_none()
+        Token.value == args.get('token')
+    ).filter(
+        sa.or_(
+            Token.expire > datetime.datetime.now(),
+            Token.expire.is_(None)
+        )
+    ).one_or_none()
     if not token:
         abort(401)
     # make session
@@ -26,6 +34,7 @@ def login(args):
     # remove temporary token
     db.session.delete(token)
     db.session.flush()
+    db.session.commit()
     # make response
     response = make_response(jsonify({'Authentication': session.value}))
     response.set_cookie('Authentication', session.value)
