@@ -33,7 +33,6 @@ def login(args):
     db.session.add(session)
     # remove temporary token
     db.session.delete(token)
-    db.session.flush()
     db.session.commit()
     # make response
     response = make_response(jsonify({'Authentication': session.value}))
