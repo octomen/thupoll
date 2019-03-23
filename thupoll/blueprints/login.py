@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
     'token': fields.Str(required=True),
 }, error_status_code=401)
 def login(args):
-    logger.error('Headers of request', request.headers)
+    logger.error('Headers of request %s', request.headers)
     # find token
     token = db.session.query(Token).filter(
         Token.value == args.get('token')
