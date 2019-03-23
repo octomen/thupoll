@@ -56,4 +56,5 @@ class InviteHandler:
                 link=generate_invite_link(self.url, token),
             ),
             parse_mode=telegram.ParseMode.MARKDOWN,
+            disable_web_page_preview=True,
         )
