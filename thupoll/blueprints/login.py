@@ -2,7 +2,7 @@ import datetime
 import logging
 import sqlalchemy as sa
 
-from flask import Blueprint, make_response, abort, jsonify, request
+from flask import Blueprint, make_response, abort, jsonify
 from webargs import fields
 from webargs.flaskparser import use_args
 from thupoll.models import db, Token, Session
@@ -17,9 +17,6 @@ logger = logging.getLogger(__name__)
     'token': fields.Str(required=True),
 }, error_status_code=401)
 def login(args):
-    if 'Telegram' in (getattr(request.user_agent, 'string', None) or ''):
-        logger.info('It is a Telegram')
-        return '', 204
     # find token
     token = db.session.query(Token).filter(
         Token.value == args.get('token')
