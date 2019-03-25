@@ -31,7 +31,11 @@ class Environ(Env):
     def root_path(self):
         return pathlib.Path(__file__).parent.parent
 
+    @property
+    def env_path(self):
+        return pathlib.Path(__file__).parent
+
 
 env = Environ()
 
-env.read_env(env.root_path)
+env.read_env(env.env_path)
