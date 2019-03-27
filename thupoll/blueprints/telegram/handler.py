@@ -1,4 +1,5 @@
 import telegram  # noqa: F401
+from telegram.chat import Chat
 
 from thupoll.blueprints.telegram import logger
 from thupoll.blueprints.telegram.auth import AuthAdapter
@@ -9,9 +10,9 @@ from thupoll.models import db
 class InviteHandler:
     """Handler for generate token and link to "thupoll"."""
 
-    CHANNEL_ANSWER = "Невозможно сгенерировать ссылку для канала"
+    GROUP_ANSWER = "Для получения приглашения напишите боту личное сообщение."
     ERROR_MESSAGE = (
-        "Вы не являетесь зарегистрированным ползователем. "
+        "Вы не являетесь зарегистрированным пользователем."
         "Обратитесь к администратору."
     )
     LINK_TEMPLATE = "Привет, {name}! Твоя [ссылка]({link})"
@@ -32,23 +33,20 @@ class InviteHandler:
         message = update.message  # type: telegram.Message
         user = message.from_user  # type: telegram.User
 
-        if user is None:
-            logger.info("Message from channel {}".format(message.chat_id))
-            message.reply_text(self.CHANNEL_ANSWER)
+        if message.chat.type != Chat.PRIVATE:
+            logger.info("Message from channel or group %s", message.chat_id)
+            message.reply_text(self.GROUP_ANSWER)
             return
 
-        elif not adapter.exist_user(user.id):
-            logger.info("Unregistered user {}".format(user.id))
+        if not adapter.exist_user(user.id):
+            logger.info("Unregistered user %s", user.id)
             message.reply_text(self.ERROR_MESSAGE)
             return
 
         token = adapter.generate_token(user.id)
         db.session.commit()
 
-        logger.info("Generate link for user {name} ({id})".format(
-            id=user.id,
-            name=user.full_name,
-        ))
+        logger.info("Generate link for user %s (%s)", user.id, user.full_name)
         bot.send_message(
             chat_id=message.chat_id,
             text=self.LINK_TEMPLATE.format(

@@ -38,7 +38,7 @@ pipeline:
     when:
       event: push
       branch:
-      - master
+        - master
     host:
       from_secret: deploy_host
     username:
