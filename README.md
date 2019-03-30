@@ -1,4 +1,4 @@
-[![Build Status](http://thupoll.liinda.ru:8090/api/badges/octomen/thupoll/status.svg)](http://thupoll.liinda.ru:8090/octomen/thupoll)
+[![Build Status](http://drone.liinda.ru/api/badges/octomen/thupoll/status.svg)](http://drone.liinda.ru/octomen/thupoll)
 
 ThuPoll
 

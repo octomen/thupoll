@@ -29,19 +29,19 @@ def test__one__404_when_theme_not_exists(client):
 def test__one__correct(client, theme, now):
     r = client.get('/themes/{}'.format(theme.id))
     assert r.status_code == 200, r.get_json()
-    assert r.get_json() == marshall(theme)
+    assert r.get_json() == dict(results=marshall(theme))
 
 
 def test__all__empty_when_themes_not_exists(client):
     r = client.get('/themes')
     assert r.status_code == 200, r.get_json()
-    assert r.get_json() == []
+    assert r.get_json() == dict(results=[])
 
 
 def test__all__one_theme(client, theme):
     r = client.get('/themes')
     assert r.status_code == 200, r.get_json()
-    assert r.get_json() == [marshall(theme)]
+    assert r.get_json() == dict(results=[marshall(theme)])
 
 
 def test__create__correct(client, people, user_headers):
@@ -55,10 +55,10 @@ def test__create__correct(client, people, user_headers):
     created_theme = r.get_json()
     assert r.status_code == 200, created_theme
     getted_theme = client.get('/themes/{}'.format(
-        created_theme['id'])).get_json()
+        created_theme['results']['id'])).get_json()
     assert created_theme == getted_theme
     # check binding to user which doing request
-    assert created_theme['author']['id'] == expected_author_id
+    assert created_theme['results']['author']['id'] == expected_author_id
 
 
 def test__delete__correct_by_author(client, theme, user_headers):

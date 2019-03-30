@@ -1,3 +1,4 @@
+from datetime import datetime
 from thupoll import models
 
 from marshmallow.exceptions import ValidationError
@@ -49,3 +50,8 @@ def __exists_error_message(name, key, must_exists):
     if must_exists:
         return '{name} with {key} does not exists'.format(name=name, key=key)
     return '{name} with {key} already exists'.format(name=name, key=key)
+
+
+def future_datetime_validator(date: datetime):
+    if datetime.now() > date:
+        raise ValidationError('Datetime {} from past'.format(date))

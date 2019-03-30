@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 @blueprint.route('/', strict_slashes=False)
 def get_all():
     logger.info('Themes. Get info all')
-    return jsonify(
-        [theme.marshall() for theme in db.session.query(Theme).all()])
+    return jsonify(dict(results=[
+        theme.marshall() for theme in db.session.query(Theme).all()
+    ]))
 
 
 @blueprint.route('/<int:theme_id>')
@@ -27,7 +28,7 @@ def get_one(theme_id: int):
     theme = db.session.query(Theme).get(theme_id)
     if not theme:
         abort(404)
-    return jsonify(theme.marshall())
+    return jsonify(dict(results=theme.marshall()))
 
 
 @blueprint.route('/', methods=['POST'], strict_slashes=False)
@@ -68,7 +69,7 @@ def create(args):
 
     logger.info('Themes. Created %s', theme.id)
 
-    return jsonify(theme.marshall())
+    return jsonify(dict(results=theme.marshall()))
 
 
 @blueprint.route('/<int:theme_id>', methods=['DELETE'])
@@ -89,4 +90,4 @@ def delete(theme_id):
 
     logger.info('Themes. Deleted %s', theme.id)
 
-    return jsonify(dict(id=theme_id))
+    return jsonify(dict(results=dict(id=theme_id)))
