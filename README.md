@@ -30,13 +30,6 @@ docker-compose up -d test
 docker-compose exec test pytest
 ```
 
-or
-
-```bash
-docker-compose run --rm --entrypoint "pytest -v" test 
-```
-
-  
     
 ## Migration-usecase
 0) Start and connect to test server
