@@ -5,7 +5,8 @@ from freezegun import freeze_time
 
 from thupoll.app_factory import init_app
 from thupoll.models import (
-    db, freeze_tables, People, Role, Theme, Session, Token, Poll
+    db, freeze_tables, People, Role, Theme, Session, Token, Poll,
+    ThemePoll
 )
 from thupoll.settings import env
 
@@ -129,6 +130,14 @@ def poll(db_session):
         expire_date=datetime.datetime.now() + datetime.timedelta(days=20),
         meet_date=datetime.datetime.now() + datetime.timedelta(days=20),
     )
+    db_session.add(obj)
+    db_session.commit()
+    yield obj
+
+
+@pytest.fixture(scope='function')
+def themepoll(db_session, theme, poll):
+    obj = ThemePoll(theme_id=theme.id, poll_id=poll.id)
     db_session.add(obj)
     db_session.commit()
     yield obj

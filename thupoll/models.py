@@ -170,6 +170,7 @@ class Poll(_BaseModel):
             meet_date=self.meet_date,
             created=self.created_date,
             updated=self.change_date,
+            themes=[theme.marshall() for theme in self.themes]
         )
 
 
@@ -193,8 +194,8 @@ class ThemePoll(_BaseModel):
     def marshall(self) -> dict:
         return dict(
             id=self.id,
-            theme=self.theme.marshall(),
-            poll=self.poll.marshall(),
+            theme_id=self.theme_id,
+            poll_id=self.poll_id,
         )
 
 

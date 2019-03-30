@@ -11,13 +11,15 @@ def get_past_datetime(delta=30):
     return datetime.datetime.now() - datetime.timedelta(days=delta)
 
 
-def test__marshall(poll):
+def test__marshall(themepoll):
+    poll = themepoll.poll
     assert marshall(poll) == dict(
         id=poll.id,
         expire_date=poll.expire_date.isoformat(),
         meet_date=poll.meet_date.isoformat(),
         created=poll.created_date.isoformat(),
-        updated=poll.change_date.isoformat()
+        updated=poll.change_date.isoformat(),
+        themes=[marshall(themepoll.theme)],
     )
 
 

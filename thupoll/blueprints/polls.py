@@ -4,7 +4,7 @@ from webargs import fields
 from webargs.flaskparser import use_args, use_kwargs
 
 from thupoll import validators
-from thupoll.models import db, Poll
+from thupoll.models import db, Poll, ThemePoll
 from thupoll.utils import for_admins
 
 
@@ -95,3 +95,45 @@ def update(poll_id, meet_date=None, expire_date=None):
     db.session.commit()
 
     return jsonify(dict(results=poll.marshall()))
+
+
+@blueprint.route('/<int:poll_id>/themes/<int:theme_id>', methods=['POST'])
+@for_admins
+def add_theme(poll_id, theme_id):
+    logger.info('Poll %s. Add theme %s', poll_id, theme_id)
+
+    validators.themepoll(
+        theme_id=theme_id, poll_id=poll_id, must_exists=False)
+    validators.poll_id(poll_id, must_exists=True)
+    validators.theme_id(theme_id, must_exists=True)
+
+    themepoll = ThemePoll(theme_id=theme_id, poll_id=poll_id)
+    db.session.add(themepoll)
+    # TODO remove. Now needed for tests (when happens auto-commit?)
+    db.session.commit()
+
+    logger.info(
+        'Poll %s. Theme %s added. ThemePoll %s',
+        poll_id, theme_id, themepoll.id)
+
+    return jsonify(dict(results=themepoll.marshall()))
+
+
+@blueprint.route('/<int:poll_id>/themes/<int:theme_id>', methods=['DELETE'])
+@for_admins
+def delete_theme(poll_id, theme_id):
+    logger.info('Poll %s. Delete theme %s', poll_id, theme_id)
+
+    themepoll = validators.themepoll(
+        theme_id=theme_id, poll_id=poll_id, must_exists=True)
+
+    db.session.delete(themepoll)
+    # TODO remove. Now needed for tests (when happens auto-commit?)
+    db.session.commit()
+
+    logger.info(
+        'Poll %s. Theme %s deleted. ThemePoll %s',
+        poll_id, theme_id, themepoll.id)
+
+    return jsonify(dict(results=dict(
+        id=themepoll.id, poll_id=poll_id, theme_id=theme_id)))
