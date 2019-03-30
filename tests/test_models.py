@@ -11,7 +11,7 @@ from thupoll import models
     models.Theme,
     models.Poll,
     models.ThemePoll,
-    models.Volume,
+    models.Vote,
 ])
 def test_correct_simple_select(model, db_session):
     db_session.query(model).all()

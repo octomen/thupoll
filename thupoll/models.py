@@ -198,8 +198,8 @@ class ThemePoll(_BaseModel):
         )
 
 
-class Volume(_BaseModel):
-    __tablename__ = 'volume'
+class Vote(_BaseModel):
+    __tablename__ = 'vote'
 
     id = sa.Column(sa.Integer, primary_key=True)
 
@@ -225,8 +225,8 @@ class Volume(_BaseModel):
 
     __table_args__ = (
         sa.Index(
-            'volume_people_id_people_id_uidx',
-            'people_id', 'themepoll_id', unique=True
+            'vote_people_id_people_id_uidx',
+            'people_id', 'themepoll_id', unique=True,
         ),
     )
 
