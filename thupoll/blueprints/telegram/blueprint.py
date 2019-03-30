@@ -18,7 +18,7 @@ webhook = TelegramHook(
 mount(webhook)
 
 
-@telegram_blueprint.route("/", methods=["POST"])
+@telegram_blueprint.route("/", strict_slashes=False, methods=["POST"])
 def handle():
     """Entrypoint for telegram api."""
     try:
