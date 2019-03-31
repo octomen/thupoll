@@ -27,9 +27,7 @@ def check_auth(*roles):
                     Session.expire > datetime.datetime.now(),
                     Session.expire.is_(None)
                 )
-            ).one_or_none()
-            if not session:
-                abort(401)
+            ).one_or_abort(401)
             # save user to flask-session
             g.people = session.people
             # check role

@@ -2,7 +2,7 @@ import datetime
 import logging
 import sqlalchemy as sa
 
-from flask import Blueprint, make_response, abort, jsonify
+from flask import Blueprint, make_response, jsonify
 from webargs import fields
 from webargs.flaskparser import use_args
 from thupoll.models import db, Token, Session
@@ -25,9 +25,7 @@ def login(args):
             Token.expire > datetime.datetime.now(),
             Token.expire.is_(None)
         )
-    ).one_or_none()
-    if not token:
-        abort(401)
+    ).one_or_abort(401)
     # make session
     session = Session(people_id=token.people_id)
     db.session.add(session)

@@ -1,11 +1,24 @@
 import datetime
 import uuid
 
+from flask import abort
 import sqlalchemy as sa
 from sqlalchemy.orm import relationship
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, BaseQuery
 
-db = SQLAlchemy()
+
+class _Query(BaseQuery):  # out of the box it can `get_or_404` only
+    def one_or_abort(self, http_status):
+        obj = self.one_or_none()
+        if obj is None:
+            abort(http_status)
+        return obj
+
+    def one_or_404(self, ):
+        return self.one_or_abort(http_status=404)
+
+
+db = SQLAlchemy(query_class=_Query)
 
 
 freeze_tables = {'role', 'theme_status'}
@@ -38,6 +51,7 @@ class ThemeStatus(_BaseModel):
     __tablename__ = 'theme_status'
 
     NEW = 1
+    PLANNED = 2
 
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.String, nullable=True, unique=True)
