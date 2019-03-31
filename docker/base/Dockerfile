@@ -1,5 +1,7 @@
 FROM python:3
 
+USER 1000
+
 COPY requirements/common.txt common_requirements.txt
 RUN pip install --no-cache -r common_requirements.txt
 
