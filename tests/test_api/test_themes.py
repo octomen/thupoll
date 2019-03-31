@@ -1,4 +1,6 @@
-from thupoll.models import db, Theme
+import pytest
+
+from thupoll.models import db, Theme, ThemeStatus
 
 from tests.utils import marshall
 
@@ -73,3 +75,131 @@ def test__delete__correct_by_admin(client, theme, admin_headers):
     r = client.delete('/themes/{}'.format(theme.id), headers=admin_headers)
     assert r.status_code == 200, r.get_json()
     assert db.session.query(Theme).count() == 0
+
+
+def test__patch__all_correct(
+    client, theme, faker, db_session, people_factory,
+    session_factory, headers_factory,
+):
+    assert db.session.query(Theme).count() == 1
+
+    new_description = faker.text(max_nb_chars=500)
+    new_title = faker.text(max_nb_chars=20)
+
+    new_people = people_factory()
+    _session = session_factory(people=new_people)
+    headers = headers_factory(_session)
+
+    new_status = db.session.query(ThemeStatus).filter(
+        ThemeStatus.id != ThemeStatus.NEW,
+    ).first()
+    assert new_status
+
+    r = client.patch('/themes/{}'.format(theme.id), json=dict(
+        title=new_title,
+        description=new_description,
+        reporter_id=new_people.id,
+        status_id=new_status.id,
+    ), headers=headers)
+
+    response = r.get_json()
+    assert response
+    assert r.status_code == 200, response
+    assert response.keys() == {'results'}
+
+    theme = db.session.query(Theme).one()  # type: Theme
+    assert response['results'] == marshall(theme)
+
+    assert theme.title == new_title
+    assert theme.description == new_description
+    assert theme.reporter_id == new_people.id
+    assert theme.status_id == new_status.id
+
+
+@pytest.mark.parametrize('changed', (
+    'reporter_id', 'status_id', 'title', 'description'))
+def test__patch__one_correct(
+    client, theme, faker, db_session, people_factory, admin_headers,
+    changed,
+):
+    assert db.session.query(Theme).count() == 1
+
+    new_description = faker.text(max_nb_chars=500)
+    new_title = faker.text(max_nb_chars=20)
+    new_people = people_factory()
+    new_status = db.session.query(ThemeStatus).filter(
+        ThemeStatus.id != ThemeStatus.NEW,
+    ).first()
+    assert new_status
+
+    full_params = {
+        'title': new_title,
+        'description': new_description,
+        'reporter_id': new_people.id,
+        'status_id': new_status.id,
+    }
+    one_param = {k: v for k, v in full_params.items() if k == changed}
+    assert one_param
+
+    r = client.patch(
+        '/themes/{}'.format(theme.id), json=one_param, headers=admin_headers)
+
+    response = r.get_json()
+    assert response
+    assert r.status_code == 200, response
+    assert response.keys() == {'results'}
+
+    theme = db.session.query(Theme).one()  # type: Theme
+    marshalled = marshall(theme)
+    assert response['results'] == marshalled
+
+    assert theme.title == marshalled['title']
+    assert theme.description == marshalled['description']
+    assert theme.reporter_id == marshalled['reporter']['id']
+    assert theme.status_id == marshalled['status']['id']
+
+
+def test__patch__set_description_none(
+    client, theme, faker, db_session, people_factory, admin_headers,
+):
+    assert db.session.query(Theme).count() == 1
+
+    r = client.patch(
+        '/themes/{}'.format(theme.id),
+        json={'description': None},
+        headers=admin_headers)
+
+    response = r.get_json()
+    assert response
+    assert r.status_code == 200, response
+
+    theme = db.session.query(Theme).one()  # type: Theme
+    assert theme.description is None
+
+
+def test__patch__404(
+    client, theme, faker, db_session, people_factory,
+    session_factory, headers_factory,
+):
+    assert db.session.query(Theme).count() == 1
+
+    new_description = faker.text(max_nb_chars=500)
+    new_title = faker.text(max_nb_chars=20)
+
+    new_status = db.session.query(ThemeStatus).filter(
+        ThemeStatus.id != ThemeStatus.NEW,
+    ).first()
+    assert new_status
+
+    new_people = people_factory()
+    _session = session_factory(people=new_people)
+    headers = headers_factory(_session)
+
+    r = client.patch('/themes/{}'.format(theme.id + 1), json=dict(
+        title=new_title,
+        description=new_description,
+        reporter_id=new_people.id,
+        status_id=new_status.id,
+    ), headers=headers)
+
+    assert r.status_code == 404, r.get_json()

@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, jsonify, abort
+from flask import Blueprint, jsonify
 from webargs import fields
 from webargs.flaskparser import use_args, use_kwargs
 
@@ -23,9 +23,7 @@ def get_all():
 @blueprint.route('/<int:poll_id>')
 def get_one(poll_id: int):
     logger.info('Poll. Get info %s', poll_id)
-    obj = db.session.query(Poll).get(poll_id)
-    if not obj:
-        abort(404)
+    obj = db.session.query(Poll).get_or_404(poll_id)
     return jsonify(dict(results=obj.marshall()))
 
 
@@ -60,10 +58,7 @@ def create(args):
 def delete(poll_id):
     logger.info('Poll. Delete %s', poll_id)
 
-    poll = db.session.query(Poll).get(poll_id)
-
-    if not poll:
-        abort(404)
+    poll = db.session.query(Poll).get_or_404(poll_id)
 
     db.session.delete(poll)
     db.session.commit()
@@ -82,10 +77,7 @@ def delete(poll_id):
 def update(poll_id, meet_date=None, expire_date=None):
     logger.info('Poll. Update %s %s %s', poll_id, expire_date, meet_date)
 
-    poll = db.session.query(Poll).get(poll_id)
-
-    if not poll:
-        abort(404)
+    poll = db.session.query(Poll).get_or_404(poll_id)
 
     if expire_date:
         poll.expire_date = expire_date
