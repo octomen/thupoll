@@ -32,8 +32,12 @@ class AuthAdapter:
 
         if people is None:
             raise BotAuthException(
-                "People wiht identifier = {} "
+                "People with identifier = {} "
                 "does not exist".format(identifier))
+        # invalidate old tokens
+        self.session.query(m.Token).filter(
+            m.Token.people_id == people.id).delete()
+        # create new token
         token = m.Token(
             people=people,
             expire=(datetime.datetime.now() +
