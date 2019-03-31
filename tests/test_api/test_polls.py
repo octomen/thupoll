@@ -1,6 +1,7 @@
 import datetime
 from thupoll.models import db, Poll
 from tests.utils import marshall
+from tests.factories import Factory
 
 
 def get_future_datetime(delta=30):
@@ -11,7 +12,8 @@ def get_past_datetime(delta=30):
     return datetime.datetime.now() - datetime.timedelta(days=delta)
 
 
-def test__marshall(themepoll):
+def test__marshall():
+    themepoll = Factory.themepoll()
     poll = themepoll.poll
     assert marshall(poll) == dict(
         id=poll.id,

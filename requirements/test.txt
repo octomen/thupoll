@@ -4,3 +4,4 @@ pytest-faker
 wsgi_intercept
 flake8
 freezegun
+factory_boy

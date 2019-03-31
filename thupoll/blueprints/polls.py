@@ -1,5 +1,6 @@
 import logging
 from flask import Blueprint, jsonify, abort
+from marshmallow import Schema
 from webargs import fields
 from webargs.flaskparser import use_args, use_kwargs
 
@@ -97,43 +98,39 @@ def update(poll_id, meet_date=None, expire_date=None):
     return jsonify(dict(results=poll.marshall()))
 
 
-@blueprint.route('/<int:poll_id>/themes/<int:theme_id>', methods=['POST'])
-@for_admins
-def add_theme(poll_id, theme_id):
-    logger.info('Poll %s. Add theme %s', poll_id, theme_id)
+class ThemeToPoll(Schema):
+    theme_id = fields.Int(required=True)
+    order_no = fields.Int(required=True)
 
-    validators.themepoll(
-        theme_id=theme_id, poll_id=poll_id, must_exists=False)
+
+@blueprint.route('/<int:poll_id>/themes', methods=['POST'])
+@for_admins
+@use_args(ThemeToPoll(many=True))
+def set_themes(themes, poll_id):
+    logger.info('Poll %s. Set themes %s', poll_id, themes)
+
     validators.poll_id(poll_id, must_exists=True)
-    validators.theme_id(theme_id, must_exists=True)
+    validators.distinct(
+        themes, name='theme_id', fetcher=lambda x: x['theme_id'])
+    validators.distinct(
+        themes, name='order_no', fetcher=lambda x: x['order_no'])
 
-    themepoll = ThemePoll(theme_id=theme_id, poll_id=poll_id)
-    db.session.add(themepoll)
-    # TODO remove. Now needed for tests (when happens auto-commit?)
+    for theme in themes:
+        validators.theme_id(theme['theme_id'], must_exists=True)
+
+    # delete previous state of themes
+    db.session.query(ThemePoll).filter_by(poll_id=poll_id).delete()
+    # create new state of themes
+    for theme in themes:
+        db.session.add(ThemePoll(
+            theme_id=theme['theme_id'],
+            poll_id=poll_id,
+            order_no=theme['order_no'],
+        ))
     db.session.commit()
 
     logger.info(
-        'Poll %s. Theme %s added. ThemePoll %s',
-        poll_id, theme_id, themepoll.id)
+        'Poll %s. %s themes was set (%s)',
+        poll_id, len(themes), themes)
 
-    return jsonify(dict(results=themepoll.marshall()))
-
-
-@blueprint.route('/<int:poll_id>/themes/<int:theme_id>', methods=['DELETE'])
-@for_admins
-def delete_theme(poll_id, theme_id):
-    logger.info('Poll %s. Delete theme %s', poll_id, theme_id)
-
-    themepoll = validators.themepoll(
-        theme_id=theme_id, poll_id=poll_id, must_exists=True)
-
-    db.session.delete(themepoll)
-    # TODO remove. Now needed for tests (when happens auto-commit?)
-    db.session.commit()
-
-    logger.info(
-        'Poll %s. Theme %s deleted. ThemePoll %s',
-        poll_id, theme_id, themepoll.id)
-
-    return jsonify(dict(results=dict(
-        id=themepoll.id, poll_id=poll_id, theme_id=theme_id)))
+    return get_one(poll_id=poll_id)

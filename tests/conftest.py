@@ -137,7 +137,8 @@ def poll(db_session):
 
 @pytest.fixture(scope='function')
 def themepoll(db_session, theme, poll):
-    obj = ThemePoll(theme_id=theme.id, poll_id=poll.id)
+    obj = ThemePoll(
+        theme_id=theme.id, poll_id=poll.id, order_no=random.randint(1, 100))
     db_session.add(obj)
     db_session.commit()
     yield obj
