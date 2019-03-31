@@ -69,9 +69,9 @@ def themepoll(
     obj = models.db.session.query(
         models.ThemePoll
     ).filter_by(
-        theme_id=theme_id
-    ).filter_by(
-        poll_id=poll_id).one_or_none()
+        theme_id=theme_id,
+        poll_id=poll_id,
+    ).one_or_none()
     if must_exists == bool(obj):
         return obj
     raise ValidationError(__exists_error_message(
