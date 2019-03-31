@@ -4,6 +4,15 @@ from tests.utils import marshall
 from tests.factories import Factory
 
 
+def test__set_any_themes__denied_by_no_admin(client, user_headers):
+    r = client.post(
+        '/polls/{}/themes'.format(666),
+        json=[dict(theme_id=777, order_no=1)],
+        headers=user_headers,
+    )
+    assert r.status_code == 403, r.get_json()
+
+
 def test__set_two_themes__correct_if_before_no_themes(client, admin_headers):
     theme1 = Factory.theme()
     theme2 = Factory.theme()
@@ -94,24 +103,3 @@ def test__invalid_poll_validation(client, admin_headers):
     )
     assert r.status_code == 422, r.get_json()
     assert r.get_json() == {'_schema': ['Poll with id=1 does not exists']}
-
-#
-# def test__add_theme__error_when_already_exists(
-#         client, themepoll, admin_headers):
-#     r = client.post('/polls/{}/themes/{}'.format(
-#         themepoll.poll_id, themepoll.theme_id), headers=admin_headers)
-#     assert r.status_code == 422
-#
-#
-# def test__delete_theme__correct(client, themepoll, admin_headers):
-#     r = client.delete('/polls/{}/themes/{}'.format(
-#         themepoll.poll_id, themepoll.theme_id), headers=admin_headers)
-#     assert r.status_code == 200
-#     assert __count_themepolls(themepoll.poll_id, themepoll.theme_id) == 0
-#
-#
-# def test__delete_theme__error_when_not_exists(
-#         client, poll, theme, admin_headers):
-#     r = client.delete('/polls/{}/themes/{}'.format(poll.id, theme.id),
-#                       headers=admin_headers)
-#     assert r.status_code == 422
