@@ -9,4 +9,6 @@ COPY scripts $PYTHONPATH/scripts
 COPY thupoll $PYTHONPATH/thupoll
 COPY tests $PYTHONPATH/tests
 
+USER 1000
+
 CMD [ "./entrypoint.sh" ]
