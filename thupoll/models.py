@@ -254,8 +254,10 @@ class Vote(_BaseModel):
     def marshall(self) -> dict:
         return dict(
             id=self.id,
-            theme=self.theme.marshall(),
-            poll=self.poll.marshall(),
+            created=self.created_date,
+            updated=self.change_date,
+            themepoll_id=self.themepoll_id,
+            people_id=self.people_id,
             themepoll=self.themepoll.marshall(),
             people=self.people.marshall(),
         )
