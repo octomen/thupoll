@@ -174,7 +174,8 @@ class Poll(_BaseModel):
     themes = relationship(
         "Theme",
         secondary="theme_poll",
-        back_populates="polls"
+        back_populates="polls",
+        lazy='joined',
     )
 
     def marshall(self) -> dict:
@@ -184,6 +185,7 @@ class Poll(_BaseModel):
             meet_date=self.meet_date,
             created=self.created_date,
             updated=self.change_date,
+            themes=[theme.marshall() for theme in self.themes]
         )
 
 
@@ -193,6 +195,7 @@ class ThemePoll(_BaseModel):
     id = sa.Column(sa.Integer, primary_key=True)
     theme_id = sa.Column(sa.Integer, sa.ForeignKey('theme.id'), nullable=False)
     poll_id = sa.Column(sa.Integer, sa.ForeignKey('poll.id'), nullable=False)
+    order_no = sa.Column(sa.Integer, nullable=False)
 
     theme = relationship(Theme, lazy='joined')  # type: Theme
     poll = relationship(Poll, lazy='joined')  # type: Poll
@@ -202,13 +205,17 @@ class ThemePoll(_BaseModel):
             'theme_poll_poll_id_theme_id_uidx',
             'poll_id', 'theme_id', unique=True
         ),
+        sa.Index(
+            'theme_poll_poll_id_order_no_uidx',
+            'poll_id', 'order_no', unique=True
+        ),
     )
 
     def marshall(self) -> dict:
         return dict(
             id=self.id,
-            theme=self.theme.marshall(),
-            poll=self.poll.marshall(),
+            theme_id=self.theme_id,
+            poll_id=self.poll_id,
         )
 
 

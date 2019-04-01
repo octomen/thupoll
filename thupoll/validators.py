@@ -1,7 +1,9 @@
-from datetime import datetime
-from thupoll import models
+import typing
 
+from datetime import datetime
 from marshmallow.exceptions import ValidationError
+
+from thupoll import models
 
 
 # TODO remove copypasting
@@ -9,7 +11,7 @@ from marshmallow.exceptions import ValidationError
 
 def people_id(
         value: int,
-        must_exists: bool,
+        must_exists: bool = True,
 ):
     if not value:
         return
@@ -22,7 +24,7 @@ def people_id(
 
 def theme_status_id(
         value: int,
-        must_exists: bool,
+        must_exists: bool = True,
 ):
     if not value:
         return
@@ -35,7 +37,7 @@ def theme_status_id(
 
 def theme_id(
         value: int,
-        must_exists: bool,
+        must_exists: bool = True,
 ):
     if not value:
         return
@@ -44,6 +46,37 @@ def theme_id(
         return obj
     raise ValidationError(__exists_error_message(
         'Theme', 'id={}'.format(value), must_exists=must_exists))
+
+
+def poll_id(
+        value: int,
+        must_exists: bool = True,
+):
+    if not value:
+        return
+    obj = models.db.session.query(models.Poll).get(value)
+    if must_exists == bool(obj):
+        return obj
+    raise ValidationError(__exists_error_message(
+        'Poll', 'id={}'.format(value), must_exists=must_exists))
+
+
+def themepoll(
+        theme_id: int,
+        poll_id: int,
+        must_exists: bool = True,
+):
+    obj = models.db.session.query(
+        models.ThemePoll
+    ).filter_by(
+        theme_id=theme_id,
+        poll_id=poll_id,
+    ).one_or_none()
+    if must_exists == bool(obj):
+        return obj
+    raise ValidationError(__exists_error_message(
+        'ThemePoll', 'poll_id={} theme_id={}'.format(
+            poll_id, theme_id), must_exists=must_exists))
 
 
 def __exists_error_message(name, key, must_exists):
@@ -55,3 +88,8 @@ def __exists_error_message(name, key, must_exists):
 def future_datetime_validator(date: datetime):
     if datetime.now() > date:
         raise ValidationError('Datetime {} from past'.format(date))
+
+
+def distinct(iterable: typing.Iterator, name, fetcher=lambda x: x):
+    if len(set(map(fetcher, iterable))) != len(iterable):
+        raise ValidationError('Duplication values of {}'.format(name))

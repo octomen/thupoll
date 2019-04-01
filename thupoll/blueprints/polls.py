@@ -1,10 +1,11 @@
 import logging
 from flask import Blueprint, jsonify
+from marshmallow import Schema
 from webargs import fields
 from webargs.flaskparser import use_args, use_kwargs
 
 from thupoll import validators
-from thupoll.models import db, Poll
+from thupoll.models import db, Poll, ThemePoll
 from thupoll.utils import for_admins
 
 
@@ -87,3 +88,41 @@ def update(poll_id, meet_date=None, expire_date=None):
     db.session.commit()
 
     return jsonify(dict(results=poll.marshall()))
+
+
+class ThemeToPoll(Schema):
+    theme_id = fields.Int(required=True)
+    order_no = fields.Int(required=True)
+
+
+@blueprint.route('/<int:poll_id>/themes', methods=['POST'])
+@for_admins
+@use_args(ThemeToPoll(many=True))
+def set_themes(themes, poll_id):
+    logger.info('Poll %s. Set themes %s', poll_id, themes)
+
+    validators.poll_id(poll_id, must_exists=True)
+    validators.distinct(
+        themes, name='theme_id', fetcher=lambda x: x['theme_id'])
+    validators.distinct(
+        themes, name='order_no', fetcher=lambda x: x['order_no'])
+
+    for theme in themes:
+        validators.theme_id(theme['theme_id'], must_exists=True)
+
+    # delete previous state of themes
+    db.session.query(ThemePoll).filter_by(poll_id=poll_id).delete()
+    # create new state of themes
+    for theme in themes:
+        db.session.add(ThemePoll(
+            theme_id=theme['theme_id'],
+            poll_id=poll_id,
+            order_no=theme['order_no'],
+        ))
+    db.session.commit()
+
+    logger.info(
+        'Poll %s. %s themes was set (%s)',
+        poll_id, len(themes), themes)
+
+    return get_one(poll_id=poll_id)
