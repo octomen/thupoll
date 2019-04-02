@@ -25,48 +25,78 @@ def test__marshall():
     )
 
 
-def test__update__403_denied_for_user(poll, client, user_headers):
-    r = client.patch('/polls/{}'.format(poll.id), headers=user_headers)
+def test__update__403_denied_for_simple_user(
+        poll, client, user_headers, namespace):
+    r = client.patch(
+        '/polls/{}'.format(poll.id),
+        json={'namespace_code': namespace.code},
+        headers=user_headers)
     assert r.status_code == 403, r.get_json()
 
 
-def test__delete__403_denied_when_not_exists(client, user_headers):
-    r = client.delete('/polls/1', headers=user_headers)
+def test__delete__403_denied_for_simple_user(client):
+    peoplenamespace = Factory.peoplenamespace()
+    poll = Factory.poll(namespace=peoplenamespace.namespace)
+    r = client.delete(
+        '/polls/{}'.format(poll.id),
+        json={'namespace_code': peoplenamespace.namespace.code},
+        headers=Factory.authheader(peoplenamespace.people),
+    )
     assert r.status_code == 403, r.get_json()
 
 
-def test__one__404_when_not_exists(client):
-    r = client.get('/polls/1')
+def test__one__404_when_not_exists(client, namespace, user_headers):
+    r = client.get(
+        '/polls/1',
+        json={'namespace_code': namespace.code},
+        headers=user_headers,
+    )
     assert r.status_code == 404, r.get_json()
 
 
-def test__one__correct(client, poll):
-    r = client.get('/polls/{}'.format(poll.id))
+def test__one__correct(client, poll, user_headers):
+    r = client.get(
+        '/polls/{}'.format(poll.id),
+        json={'namespace_code': poll.namespace_code},
+        headers=user_headers,
+    )
     assert r.status_code == 200, r.get_json()
+    db.session.add(poll)
     assert r.get_json() == dict(results=marshall(poll))
 
 
 def test__all__empty_when_not_exists(client):
-    r = client.get('/polls')
+    peoplenamespace = Factory.peoplenamespace()
+    r = client.get(
+        '/polls',
+        json={'namespace_code': peoplenamespace.namespace.code},
+        headers=Factory.authheader(peoplenamespace.people),
+    )
     assert r.status_code == 200, r.get_json()
     assert r.get_json() == dict(results=[])
 
 
-def test__all__one(client, poll):
-    r = client.get('/polls')
+def test__all__one(client, poll, user_headers):
+    r = client.get(
+        '/polls',
+        json={'namespace_code': poll.namespace_code},
+        headers=user_headers,
+    )
     assert r.status_code == 200, r.get_json()
+    db.session.add(poll)
     assert r.get_json() == dict(results=[marshall(poll)])
 
 
-def test__create__admin_correct(client, admin_headers):
+def test__create__admin_correct(client, admin_headers, namespace):
     r = client.post('/polls', json=dict(
         expire_date=get_future_datetime(),
         meet_date=get_future_datetime(),
+        namespace_code=namespace.code,
     ), headers=admin_headers)
     created = r.get_json()
     assert r.status_code == 200, created
     getted = client.get('/polls/{}'.format(
-        created['results']['id'])).get_json()
+        created['results']['id']), headers=admin_headers).get_json()
     assert created == getted
 
 
@@ -102,15 +132,43 @@ def test__update__error_on_send_none(poll, client, admin_headers):
         'errors': {'expire_date': ['Field may not be null.']}}
 
 
-def test__delete__denied_by_user(client, poll, user_headers):
+def test__get_all__denied_by_no_auth(client, user_headers, namespace):
+    r = client.get(
+        '/polls',
+        json={'namespace_code': namespace.code},
+        headers=user_headers,
+    )
+    assert r.status_code == 403, r.get_json()
+
+
+def test__get_one__denied_by_no_auth(client):
+    poll = Factory.poll()
+    r = client.get(
+        '/polls/{}'.format(poll.id),
+        json={'namespace_code': poll.namespace.code}
+    )
+    assert r.status_code == 401, r.get_json()
+
+
+def test__delete__denied_by_user(client, user_headers):
+    poll = Factory.poll()
     assert db.session.query(Poll).count() == 1
-    r = client.delete('/polls/{}'.format(poll.id), headers=user_headers)
+    r = client.delete(
+        '/polls/{}'.format(poll.id),
+        json={'namespace_code': poll.namespace.code},
+        headers=user_headers,
+    )
     assert r.status_code == 403, r.get_json()
     assert db.session.query(Poll).count() == 1
 
 
-def test__delete__correct_by_admin(client, poll, admin_headers):
+def test__delete__correct_by_admin(client, admin_headers):
+    poll = Factory.poll()
     assert db.session.query(Poll).count() == 1
-    r = client.delete('/polls/{}'.format(poll.id), headers=admin_headers)
+    r = client.delete(
+        '/polls/{}'.format(poll.id),
+        json={'namespace_code': poll.namespace.code},
+        headers=admin_headers,
+    )
     assert r.status_code == 200, r.get_json()
     assert db.session.query(Poll).count() == 0

@@ -3,6 +3,7 @@ import pytest
 from thupoll.models import db, Theme, ThemeStatus
 
 from tests.utils import marshall
+from tests.factories import Factory
 
 
 def test__marshall(theme):
@@ -23,41 +24,56 @@ def test__delete__404_when_theme_not_exists(client, user_headers):
     assert r.status_code == 404, r.get_json()
 
 
-def test__one__404_when_theme_not_exists(client):
-    r = client.get('/themes/1')
+def test__one__404_when_theme_not_exists(client, user_headers):
+    r = client.get('/themes/1', headers=user_headers)
     assert r.status_code == 404, r.get_json()
 
 
-def test__one__correct(client, theme, now):
-    r = client.get('/themes/{}'.format(theme.id))
+def test__one__correct(client, theme, user_headers):
+    r = client.get('/themes/{}'.format(theme.id), headers=user_headers)
     assert r.status_code == 200, r.get_json()
     assert r.get_json() == dict(results=marshall(theme))
 
 
 def test__all__empty_when_themes_not_exists(client):
-    r = client.get('/themes')
+    peoplenamespace = Factory.peoplenamespace()
+    r = client.get(
+        '/themes',
+        json={'namespace_code': peoplenamespace.namespace.code},
+        headers=Factory.authheader(peoplenamespace.people),
+    )
     assert r.status_code == 200, r.get_json()
     assert r.get_json() == dict(results=[])
 
 
-def test__all__one_theme(client, theme):
-    r = client.get('/themes')
+def test__all__one_theme(client, theme, user_headers):
+    r = client.get(
+        '/themes',
+        json={'namespace_code': theme.namespace_code},
+        headers=user_headers,
+    )
     assert r.status_code == 200, r.get_json()
+    db.session.add(theme)
     assert r.get_json() == dict(results=[marshall(theme)])
 
 
-def test__create__correct(client, people, user_headers):
+def test__create__correct(client):
+    poeplenamespace = Factory.peoplenamespace()
+    people, namespace = poeplenamespace.people, poeplenamespace.namespace
     expected_author_id = people.id
     title = 'title'
     description = 'description'
     r = client.post('/themes', json=dict(
         title=title,
         description=description,
-    ), headers=user_headers)
+        namespace_code=namespace.code,
+    ), headers=Factory.authheader(people))
     created_theme = r.get_json()
     assert r.status_code == 200, created_theme
-    getted_theme = client.get('/themes/{}'.format(
-        created_theme['results']['id'])).get_json()
+    getted_theme = client.get(
+        '/themes/{}'.format(created_theme['results']['id']),
+        headers=Factory.authheader(people)
+    ).get_json()
     assert created_theme == getted_theme
     # check binding to user which doing request
     assert created_theme['results']['author']['id'] == expected_author_id
@@ -78,15 +94,14 @@ def test__delete__correct_by_admin(client, theme, admin_headers):
 
 
 def test__patch__all_correct(
-    client, theme, faker, db_session, people_factory,
-    session_factory, headers_factory,
+    client, theme, faker, db_session, session_factory, headers_factory,
 ):
     assert db.session.query(Theme).count() == 1
 
     new_description = faker.text(max_nb_chars=500)
     new_title = faker.text(max_nb_chars=20)
 
-    new_people = people_factory()
+    new_people = Factory.peoplenamespace(namespace=theme.namespace).people
     _session = session_factory(people=new_people)
     headers = headers_factory(_session)
 
@@ -103,8 +118,8 @@ def test__patch__all_correct(
     ), headers=headers)
 
     response = r.get_json()
-    assert response
     assert r.status_code == 200, response
+    assert response
     assert response.keys() == {'results'}
 
     theme = db.session.query(Theme).one()  # type: Theme

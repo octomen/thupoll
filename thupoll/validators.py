@@ -1,9 +1,11 @@
 import typing
 
 from datetime import datetime
+from flask import abort, g
 from marshmallow.exceptions import ValidationError
 
 from thupoll import models
+from thupoll.utils import assert_auth
 
 
 # TODO remove copypasting
@@ -93,3 +95,38 @@ def future_datetime_validator(date: datetime):
 def distinct(iterable: typing.Iterator, name, fetcher=lambda x: x):
     if len(set(map(fetcher, iterable))) != len(iterable):
         raise ValidationError('Duplication values of {}'.format(name))
+
+
+def namespace_code(
+        value: str,
+        must_exists: bool,
+):
+    if not value:
+        return
+    obj = models.db.session.query(models.Namespace).get(value)
+    if must_exists == bool(obj):
+        return obj
+    raise ValidationError(__exists_error_message(
+        'Namespace', 'code={}'.format(value), must_exists=must_exists))
+
+
+def namespace_access(
+        code: str,
+        admin: bool = False,
+) -> models.Namespace:
+    # check auth
+    assert_auth()
+    # find session
+    namespace = namespace_code(code, must_exists=True)
+    # check permissions
+    if g.people.role_id != models.Role.OCTOPUS:
+        people_namespace = models.db.session.query(
+            models.PeopleNamespace
+        ).filter_by(
+            people_id=g.people.id,
+            namespace_code=namespace.code,
+        ).one_or_abort(403)  # type: models.PeopleNamespace
+        # if needed admin permissions to namespace
+        if admin and people_namespace.role_id != models.Role.OCTOPUS:
+            abort(403)
+    return namespace

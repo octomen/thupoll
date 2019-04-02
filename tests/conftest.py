@@ -7,7 +7,7 @@ from freezegun import freeze_time
 from thupoll.app_factory import init_app
 from thupoll.models import (
     db, freeze_tables, People, Role, Theme, Session, Token, Poll,
-    ThemePoll, Vote
+    ThemePoll, Namespace, PeopleNamespace, Vote
 )
 from thupoll.settings import env
 
@@ -137,12 +137,13 @@ def admin_session(db_session, admin: People):
 
 
 @pytest.fixture(scope='function')
-def theme(db_session, faker, people: People):
+def theme(db_session, faker, peoplenamespace):
     theme = Theme(
         title=faker.text(max_nb_chars=50),
         description=faker.text(max_nb_chars=50),
-        author_id=people.id,
-        reporter_id=people.id,
+        author_id=peoplenamespace.people_id,
+        reporter_id=peoplenamespace.people_id,
+        namespace_code=peoplenamespace.namespace_code,
     )
     db_session.add(theme)
     db_session.commit()
@@ -150,10 +151,34 @@ def theme(db_session, faker, people: People):
 
 
 @pytest.fixture(scope='function')
-def poll(db_session):
+def namespace(db_session, faker):
+    obj = Namespace(
+        code=faker.text(max_nb_chars=50),
+        name=faker.text(max_nb_chars=50),
+        telegram_chat_id=random.randint(0, 10000),
+    )
+    db_session.add(obj)
+    db_session.commit()
+    yield obj
+
+
+@pytest.fixture(scope='function')
+def peoplenamespace(db_session, people, namespace):
+    obj = PeopleNamespace(
+        people_id=people.id,
+        namespace_code=namespace.code,
+    )
+    db_session.add(obj)
+    db_session.commit()
+    yield obj
+
+
+@pytest.fixture(scope='function')
+def poll(db_session, peoplenamespace):
     obj = Poll(
         expire_date=datetime.datetime.now() + datetime.timedelta(days=20),
         meet_date=datetime.datetime.now() + datetime.timedelta(days=20),
+        namespace_code=peoplenamespace.namespace_code,
     )
     db_session.add(obj)
     db_session.commit()

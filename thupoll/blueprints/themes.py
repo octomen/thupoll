@@ -1,7 +1,7 @@
 import logging
 from flask import Blueprint, jsonify, abort, g
 from webargs import fields
-from webargs.flaskparser import use_args
+from webargs.flaskparser import use_kwargs, use_args
 
 from thupoll import validators
 from thupoll.models import db, Theme, ThemeStatus
@@ -13,45 +13,58 @@ logger = logging.getLogger(__name__)
 
 
 @blueprint.route('/', strict_slashes=False)
-def get_all():
+@for_auth
+@use_kwargs({
+    'namespace_code': fields.Str(required=True),
+})
+def get_all(namespace_code):
     logger.info('Themes. Get info all')
-    return jsonify(dict(results=[
-        theme.marshall() for theme in db.session.query(Theme).all()
-    ]))
+    validators.namespace_access(namespace_code)
+    q = db.session.query(Theme)
+    if not namespace_code and not g.people.is_admin():
+        abort(403)  # TODO return all accessed objects
+    elif namespace_code:
+        q = q.filter_by(namespace_code=namespace_code)
+    return jsonify(dict(results=[obj.marshall() for obj in q]))
 
 
 @blueprint.route('/<int:theme_id>')
+@for_auth
 def get_one(theme_id: int):
     logger.info('Themes. Get info %s', theme_id)
-    theme = db.session.query(Theme).get_or_404(theme_id)
-    return jsonify(dict(results=theme.marshall()))
+    obj = db.session.query(Theme).get_or_404(theme_id)  # type: Theme
+    validators.namespace_access(obj.namespace_code)
+    return jsonify(dict(results=obj.marshall()))
 
 
 @blueprint.route('/', methods=['POST'], strict_slashes=False)
 @for_auth
-@use_args({
+@use_kwargs({
     'title': fields.Str(required=True),
+    'namespace_code': fields.Str(required=True),
     'description': fields.Str(),
     'reporter_id': fields.Int(),
     'status_id': fields.Int(),
 })
-def create(args):
-    title = args.get('title')
-    desc = args.get('description')
-    reporter_id = args.get('reporter_id')
+def create(
+        title, namespace_code,
+        description=None, reporter_id=None, status_id=None,
+):
     author_id = g.people.id
-    status_id = args.get('status_id') or ThemeStatus.NEW
+    status_id = status_id or ThemeStatus.NEW
     logger.info(
         'Themes. Creating new (title %s, desc %s, reporter %s, status %s',
-        title, desc, reporter_id, status_id)
+        title, description, reporter_id, status_id)
 
+    validators.namespace_access(namespace_code)
     reporter = validators.people_id(reporter_id, must_exists=True)
     author = validators.people_id(author_id, must_exists=True)
     status = validators.theme_status_id(status_id, must_exists=True)
 
-    theme = Theme(
+    obj = Theme(
         title=title,
-        description=desc,
+        description=description,
+        namespace_code=namespace_code,
         author_id=author_id,
         reporter_id=reporter_id,
         status_id=status_id,
@@ -59,13 +72,13 @@ def create(args):
         reporter=reporter,  # fill relation for marshall
         author=author,  # fill relation for marshall
     )
-    db.session.add(theme)
+    db.session.add(obj)
     # TODO remove. Now needed for tests (when happens auto-commit?)
     db.session.commit()
 
-    logger.info('Themes. Created %s', theme.id)
+    logger.info('Themes. Created %s', obj.id)
 
-    return jsonify(dict(results=theme.marshall()))
+    return jsonify(dict(results=obj.marshall()))
 
 
 @blueprint.route('/<int:theme_id>', methods=['DELETE'])
@@ -73,15 +86,17 @@ def create(args):
 def delete(theme_id):
     logger.info('Themes. Delete %s', theme_id)
 
-    theme = db.session.query(Theme).get_or_404(theme_id)
+    obj = db.session.query(Theme).get_or_404(theme_id)
 
-    if not (g.people.is_admin() or g.people.id == theme.author_id):
+    validators.namespace_access(obj.namespace_code)
+
+    if not (g.people.is_admin() or g.people.id == obj.author_id):
         abort(403)
 
-    db.session.delete(theme)
+    db.session.delete(obj)
     db.session.commit()
 
-    logger.info('Themes. Deleted %s', theme.id)
+    logger.info('Themes. Deleted %s', obj.id)
 
     return jsonify(dict(results=dict(id=theme_id)))
 
@@ -98,6 +113,8 @@ def update(args, theme_id):
     logger.info('Themes. Updating %s (%s) by %s', theme_id, args, g.people.id)
 
     theme = db.session.query(Theme).get_or_404(theme_id)
+
+    validators.namespace_access(theme.namespace_code)
 
     title = args.get('title', theme.title)
     description = args.get('description', theme.description)
