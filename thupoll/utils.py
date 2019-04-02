@@ -38,6 +38,11 @@ def check_auth(*roles):
     return wrapper
 
 
+def assert_auth():
+    if not getattr(g, 'people', None):
+        abort(401)
+
+
 for_admins = check_auth(Role.OCTOPUS)
 for_auth = check_auth(Role.OCTOPUS, Role.INHABITANT)
 

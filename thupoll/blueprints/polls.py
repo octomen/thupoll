@@ -1,12 +1,12 @@
 import logging
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, abort, g
 from marshmallow import Schema
 from webargs import fields
-from webargs.flaskparser import use_args, use_kwargs
+from webargs.flaskparser import use_kwargs, use_args
 
 from thupoll import validators
 from thupoll.models import db, Poll, ThemePoll
-from thupoll.utils import for_admins
+from thupoll.utils import for_auth
 
 
 blueprint = Blueprint('polls', __name__)
@@ -14,37 +14,51 @@ logger = logging.getLogger(__name__)
 
 
 @blueprint.route('/', strict_slashes=False)
-def get_all():
+@for_auth
+@use_kwargs({
+    'namespace_code': fields.Str(required=True),
+})
+def get_all(namespace_code):
     logger.info('Polls. Get info all')
-    return jsonify(dict(results=[
-        obj.marshall() for obj in db.session.query(Poll).all()
-    ]))
+    validators.namespace_access(namespace_code)
+    q = db.session.query(Poll)
+    if not namespace_code and not g.people.is_admin():
+        abort(403)  # TODO return all accessed objects
+    elif namespace_code:
+        q = q.filter_by(namespace_code=namespace_code)
+    return jsonify(dict(results=[obj.marshall() for obj in q]))
 
 
 @blueprint.route('/<int:poll_id>')
+@for_auth
 def get_one(poll_id: int):
     logger.info('Poll. Get info %s', poll_id)
-    obj = db.session.query(Poll).get_or_404(poll_id)
+    obj = db.session.query(Poll).get_or_404(poll_id)  # type: Poll
+    validators.namespace_access(obj.namespace_code)
     return jsonify(dict(results=obj.marshall()))
 
 
 @blueprint.route('/', methods=['POST'], strict_slashes=False)
-@for_admins
-@use_args({
-    'expire_date': fields.DateTime(),
-    'meet_date': fields.DateTime(),
+@for_auth
+@use_kwargs({
+    'expire_date': fields.DateTime(required=True),
+    'meet_date': fields.DateTime(required=True),
+    'namespace_code': fields.Str(required=True),
 })
-def create(args):
-    expire_date = args.get('expire_date')
-    meet_date = args.get('meet_date')
+def create(expire_date, meet_date, namespace_code):
     logger.info(
-        'Poll. Creating new (expire_date %s, meet_date %s)',
-        expire_date, meet_date)
+        'Poll. Creating new (expire_date %s, meet_date %s) in %s',
+        expire_date, meet_date, namespace_code)
 
     validators.future_datetime_validator(expire_date)
     validators.future_datetime_validator(meet_date)
+    validators.namespace_access(namespace_code, admin=True)
 
-    poll = Poll(expire_date=expire_date, meet_date=meet_date)
+    poll = Poll(
+        expire_date=expire_date,
+        meet_date=meet_date,
+        namespace_code=namespace_code,
+    )
     db.session.add(poll)
     # TODO remove. Now needed for tests (when happens auto-commit?)
     db.session.commit()
@@ -55,11 +69,13 @@ def create(args):
 
 
 @blueprint.route('/<int:poll_id>', methods=['DELETE'])
-@for_admins
+@for_auth
 def delete(poll_id):
     logger.info('Poll. Delete %s', poll_id)
 
     poll = db.session.query(Poll).get_or_404(poll_id)
+
+    validators.namespace_access(poll.namespace_code, admin=True)
 
     db.session.delete(poll)
     db.session.commit()
@@ -70,7 +86,7 @@ def delete(poll_id):
 
 
 @blueprint.route('/<int:poll_id>', methods=['PATCH'])
-@for_admins
+@for_auth
 @use_kwargs({
     'meet_date': fields.DateTime(allow_none=False),
     'expire_date': fields.DateTime(allow_none=False),
@@ -79,6 +95,8 @@ def update(poll_id, meet_date=None, expire_date=None):
     logger.info('Poll. Update %s %s %s', poll_id, expire_date, meet_date)
 
     poll = db.session.query(Poll).get_or_404(poll_id)
+
+    validators.namespace_access(poll.namespace_code, admin=True)
 
     if expire_date:
         poll.expire_date = expire_date
@@ -96,12 +114,13 @@ class ThemeToPoll(Schema):
 
 
 @blueprint.route('/<int:poll_id>/themes', methods=['POST'])
-@for_admins
+@for_auth
 @use_args(ThemeToPoll(many=True))
 def set_themes(themes, poll_id):
     logger.info('Poll %s. Set themes %s', poll_id, themes)
 
-    validators.poll_id(poll_id, must_exists=True)
+    poll = validators.poll_id(poll_id, must_exists=True)
+    validators.namespace_access(poll.namespace_code, admin=True)
     validators.distinct(
         themes, name='theme_id', fetcher=lambda x: x['theme_id'])
     validators.distinct(

@@ -5,8 +5,9 @@ from tests.factories import Factory
 
 
 def test__set_any_themes__denied_by_no_admin(client, user_headers):
+    poll = Factory.poll()
     r = client.post(
-        '/polls/{}/themes'.format(666),
+        '/polls/{}/themes'.format(poll.id),
         json=[dict(theme_id=777, order_no=1)],
         headers=user_headers,
     )
