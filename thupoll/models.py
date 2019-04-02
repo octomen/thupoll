@@ -1,10 +1,11 @@
 import datetime
+import avinit
+import sqlalchemy as sa
 import uuid
 
 from flask import abort
-import sqlalchemy as sa
-from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy, BaseQuery
+from sqlalchemy.orm import relationship
 
 
 class _Query(BaseQuery):  # out of the box it can `get_or_404` only
@@ -107,6 +108,10 @@ class People(_BaseModel):
     def is_admin(self):
         return self.role_id == Role.OCTOPUS
 
+    @property
+    def avatar(self):
+        return avinit.get_svg_avatar(self.name)
+
     def marshall(self) -> dict:
         return dict(
             id=self.id,
@@ -115,6 +120,7 @@ class People(_BaseModel):
             telegram=self.telegram_login,
             created=self.created_date,
             updated=self.change_date,
+            avatar=self.avatar,
         )
 
 
