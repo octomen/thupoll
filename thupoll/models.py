@@ -317,10 +317,9 @@ class Vote(_BaseModel):
             id=self.id,
             created=self.created_date,
             updated=self.change_date,
-            themepoll_id=self.themepoll_id,
             people_id=self.people_id,
-            themepoll=self.themepoll.marshall(),
-            people=self.people.marshall(),
+            pole_id=self.themepoll.poll_id,
+            theme_id=self.themepoll.theme_id,
         )
 
 

@@ -103,6 +103,16 @@ class ThemePollFactory(BaseFactory):
     poll = factory.SubFactory(PollFactory)
 
 
+class VoteFactory(BaseFactory):
+    class Meta:
+        model = models.Vote
+
+    created_date = 0
+    change_date = 0
+    themepoll = factory.SubFactory(ThemePollFactory)
+    people = factory.SubFactory(PeopleFactory)
+
+
 def authheader_factory(people):
     # TODO create session if not exists ?
     return {'Authentication': people.sessions[0].value}
@@ -116,4 +126,5 @@ class Factory:
     themepoll = ThemePollFactory
     namespace = NamespaceFactory
     peoplenamespace = PeopleNamespaceFactory
+    vote = VoteFactory
     authheader = authheader_factory

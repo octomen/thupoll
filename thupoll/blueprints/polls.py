@@ -5,7 +5,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs, use_args
 
 from thupoll import validators
-from thupoll.models import db, Poll, ThemePoll
+from thupoll.models import db, Poll, ThemePoll, Theme, Vote
 from thupoll.utils import for_auth
 
 
@@ -142,6 +142,52 @@ def set_themes(themes, poll_id):
 
     logger.info(
         'Poll %s. %s themes was set (%s)',
+        poll_id, len(themes), themes)
+
+    return get_one(poll_id=poll_id)
+
+
+class ThemeArg(Schema):
+    theme_id = fields.Int(required=True)
+
+
+@blueprint.route('/<int:poll_id>/votes', methods=['POST'])
+@for_auth
+@use_args(ThemeArg(many=True))
+def set_votes(themes, poll_id):
+    logger.info('Poll %s. Votes for themes %s', poll_id, themes)
+
+    poll = validators.poll_id(poll_id, must_exists=True)
+    validators.namespace_access(poll.namespace_code)
+    validators.distinct(
+        themes, name='theme_id', fetcher=lambda x: x['theme_id'])
+
+    for theme in themes:
+        theme: Theme = validators.theme_id(
+            theme['theme_id'], must_exists=True)
+
+        # check exist theme in poll
+        theme["themepoll"] = db.session.query(ThemePoll).filter_by(
+            poll_id=poll_id,
+            theme_id=theme['theme_id']
+        ).one_or_404()
+
+    # delete previous state of votes
+    db.session.query(Vote).filter_by(
+        poll_id=poll_id,
+        people_id=g.people.id,
+    ).delete()
+
+    # create new state of themes
+    for theme in themes:
+        db.session.add(Vote(
+            themepoll_id=theme["themepoll"].id,
+            poll_id=poll_id,
+        ))
+    db.session.commit()
+
+    logger.info(
+        'Poll %s. %s votes was set (for themes %s)',
         poll_id, len(themes), themes)
 
     return get_one(poll_id=poll_id)
