@@ -94,7 +94,7 @@ def test__create__admin_correct(client, admin_headers, namespace):
         namespace_code=namespace.code,
     ), headers=admin_headers)
     created = r.get_json()
-    assert r.status_code == 200, created
+    assert r.status_code == 201, created
     getted = client.get('/polls/{}'.format(
         created['results']['id']), headers=admin_headers).get_json()
     assert created == getted
