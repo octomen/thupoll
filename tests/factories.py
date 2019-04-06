@@ -107,8 +107,8 @@ class VoteFactory(BaseFactory):
     class Meta:
         model = models.Vote
 
-    created_date = 0
-    change_date = 0
+    created_date = date_between('+1d', '+3d')
+    change_date = date_between('+1d', '+3d')
     themepoll = factory.SubFactory(ThemePollFactory)
     people = factory.SubFactory(PeopleFactory)
 

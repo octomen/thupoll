@@ -1,5 +1,8 @@
+from flask import Response
+from thupoll.models import Vote
+
 from tests.factories import Factory
-from tests.utils import marshall
+from tests.utils import marshall, get_past_datetime
 
 
 def test__marshall(vote):
@@ -13,35 +16,102 @@ def test__marshall(vote):
     )
 
 
-def test__set_any_votes__correct(client, user_headers):
-    poll = Factory.poll()
+def test__get_votes(db_session, client, user_headers, poll):
+    themepoll = Factory.themepoll(poll=poll)
+    vote = Factory.vote(themepoll=themepoll)
+    r = client.get("/polls/{}/votes".format(poll.id), headers=user_headers)
+    assert r.status_code == 200, r.get_json()
+    assert r.get_json() == dict(results=[marshall(vote)])
+
+
+def _post_votes(client, poll_id, themes, headers) -> Response:
+    return client.post(
+        "/polls/{}/votes".format(poll_id),
+        json=[dict(theme_id=theme.id) for theme in themes],
+        headers=headers,
+    )
+
+
+def test__set_any_votes__correct(
+    db_session, client, peoplenamespace, user_headers, poll
+):
+    theme = Factory.themepoll(poll=poll).theme
+    r = _post_votes(
+        client=client, poll_id=poll.id, themes=[theme], headers=user_headers
+    )
+
+    db_session.add(peoplenamespace)
+    assert r.status_code == 200, r.get_json()
+    vote = r.get_json()["results"][0]
+
+    assert vote["people_id"] == peoplenamespace.people_id
+    assert vote["pole_id"] == poll.id
+    assert vote["theme_id"] == theme.id
+
+
+def test__set_any_votes__expire(
+        db_session, client, peoplenamespace, user_headers
+):
+    poll = Factory.poll(
+        expire_date=get_past_datetime(), namespace=peoplenamespace.namespace
+    )
+    theme = Factory.themepoll(poll=poll).theme
+    r = _post_votes(
+        client=client, poll_id=poll.id, themes=[theme], headers=user_headers
+    )
+
+    assert r.status_code == 422, r.get_json()
+    assert r.get_json() == {
+        "_schema": ["Datetime {} from past".format(poll.expire_date)]
+    }
+
+
+def test__set_any_votes__not_themepoll(
+    db_session, client, peoplenamespace, user_headers, poll
+):
+    theme = Factory.themepoll().theme
+    r = _post_votes(
+        client=client, poll_id=poll.id, themes=[theme], headers=user_headers
+    )
+
+    assert r.status_code == 422, r.get_json()
+    assert r.get_json() == {
+        "_schema": [
+            "ThemePoll with poll_id={} theme_id={} does not exists".format(
+                poll.id, theme.id
+            )
+        ]
+    }
+
+
+def test__set_any_votes__drop_old(
+    db_session, client, peoplenamespace, user_headers, poll
+):
+    themepoll = Factory.themepoll(poll=poll)
+    Factory.vote(themepoll=themepoll, people=peoplenamespace.people)
+
+    r = _post_votes(
+        client=client,
+        poll_id=poll.id,
+        themes=[],
+        headers=user_headers
+    )
+
+    assert r.status_code == 200, r.get_json()
+    assert 0 == len(db_session.query(Vote).all())
+
+
+def test__set_any_votes__two_theme(
+    db_session, client, peoplenamespace, user_headers, poll
+):
     theme1 = Factory.themepoll(poll=poll).theme
     theme2 = Factory.themepoll(poll=poll).theme
-    r = client.post(
-        '/polls/{}/votes'.format(poll.id),
-        json=[
-            dict(theme_id=theme1.id),
-            dict(theme_id=theme2.id),
-        ],
-        headers=user_headers,
+    r = _post_votes(
+        client=client,
+        poll_id=poll.id,
+        themes=[theme1, theme2],
+        headers=user_headers
     )
-    print(r.get_json())
+
     assert r.status_code == 200, r.get_json()
-
-
-def test__set_any_votes__incorrect_after_expire_poll(): ...
-
-
-def test__set_any_votes__incorrect_for_namespace_denied(): ...
-
-
-def test__set_any_votes__incorrect_duplication(): ...
-
-
-def test__invalid_themepoll_validation(): ...
-
-
-def test__invalid_theme_validation(): ...
-
-
-def test__invalid_poll_validation(): ...
+    assert 2 == len(r.get_json()["results"])

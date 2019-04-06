@@ -5,7 +5,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs, use_args
 
 from thupoll import validators
-from thupoll.models import db, Poll, ThemePoll, Theme, Vote
+from thupoll.models import db, Poll, ThemePoll, Vote
 from thupoll.utils import for_auth
 
 
@@ -151,38 +151,56 @@ class ThemeArg(Schema):
     theme_id = fields.Int(required=True)
 
 
+@blueprint.route('/<int:poll_id>/votes', methods=['GET'])
+@for_auth
+def get_votes(poll_id):
+    logger.info('Votes for poll %s', poll_id)
+
+    poll: Poll = validators.poll_id(poll_id, must_exists=True)
+    validators.namespace_access(poll.namespace_code)
+
+    votes = db.session.query(Vote).join(
+        ThemePoll
+    ).filter(
+        ThemePoll.poll == poll,
+    )
+    return jsonify(dict(results=[obj.marshall() for obj in votes]))
+
+
 @blueprint.route('/<int:poll_id>/votes', methods=['POST'])
 @for_auth
 @use_args(ThemeArg(many=True))
 def set_votes(themes, poll_id):
     logger.info('Poll %s. Votes for themes %s', poll_id, themes)
 
-    poll = validators.poll_id(poll_id, must_exists=True)
+    poll: Poll = validators.poll_id(poll_id, must_exists=True)
+
+    validators.future_datetime_validator(poll.expire_date)
     validators.namespace_access(poll.namespace_code)
     validators.distinct(
         themes, name='theme_id', fetcher=lambda x: x['theme_id'])
 
+    themepolls = []
     for theme in themes:
-        theme: Theme = validators.theme_id(
-            theme['theme_id'], must_exists=True)
-
-        # check exist theme in poll
-        theme["themepoll"] = db.session.query(ThemePoll).filter_by(
-            poll_id=poll_id,
-            theme_id=theme['theme_id']
-        ).one_or_404()
+        themepolls.append(
+            validators.themepoll(
+                theme_id=theme['theme_id'],
+                poll_id=poll_id
+            )
+        )
 
     # delete previous state of votes
-    db.session.query(Vote).filter_by(
-        poll_id=poll_id,
-        people_id=g.people.id,
-    ).delete()
+    db.session.query(Vote).filter(
+        ThemePoll.id == Vote.themepoll_id,
+        ThemePoll.poll_id == poll_id,
+        Vote.people_id == g.people.id,
+    ).delete(synchronize_session=False)
 
     # create new state of themes
-    for theme in themes:
+    for themepoll in themepolls:
         db.session.add(Vote(
-            themepoll_id=theme["themepoll"].id,
-            poll_id=poll_id,
+            themepoll_id=themepoll.id,
+            people_id=g.people.id,
         ))
     db.session.commit()
 
@@ -190,4 +208,4 @@ def set_votes(themes, poll_id):
         'Poll %s. %s votes was set (for themes %s)',
         poll_id, len(themes), themes)
 
-    return get_one(poll_id=poll_id)
+    return get_votes(poll_id=poll_id)

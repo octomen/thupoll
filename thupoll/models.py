@@ -355,3 +355,11 @@ class Session(_BaseModel):
     expire = sa.Column(sa.DateTime)
 
     people = relationship(People, lazy='joined')  # type: People
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            value=self.value,
+            expire=self.expire,
+            people=self.people.marshall()
+        )
