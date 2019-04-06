@@ -65,7 +65,7 @@ def create(expire_date, meet_date, namespace_code):
 
     logger.info('Poll. Created %s', poll.id)
 
-    return jsonify(dict(results=poll.marshall()))
+    return jsonify(dict(results=poll.marshall())), 201
 
 
 @blueprint.route('/<int:poll_id>', methods=['DELETE'])

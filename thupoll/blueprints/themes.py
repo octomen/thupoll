@@ -78,7 +78,7 @@ def create(
 
     logger.info('Themes. Created %s', obj.id)
 
-    return jsonify(dict(results=obj.marshall()))
+    return jsonify(dict(results=obj.marshall())), 201
 
 
 @blueprint.route('/<int:theme_id>', methods=['DELETE'])

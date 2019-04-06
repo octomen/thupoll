@@ -69,7 +69,7 @@ def test__create__correct(client):
         namespace_code=namespace.code,
     ), headers=Factory.authheader(people))
     created_theme = r.get_json()
-    assert r.status_code == 200, created_theme
+    assert r.status_code == 201, created_theme
     getted_theme = client.get(
         '/themes/{}'.format(created_theme['results']['id']),
         headers=Factory.authheader(people)
