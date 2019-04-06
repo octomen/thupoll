@@ -147,10 +147,6 @@ def set_themes(themes, poll_id):
     return get_one(poll_id=poll_id)
 
 
-class ThemeArg(Schema):
-    theme_id = fields.Int(required=True)
-
-
 @blueprint.route('/<int:poll_id>/votes', methods=['GET'])
 @for_auth
 def get_votes(poll_id):
@@ -165,6 +161,10 @@ def get_votes(poll_id):
         ThemePoll.poll == poll,
     )
     return jsonify(dict(results=[obj.marshall() for obj in votes]))
+
+
+class ThemeArg(Schema):
+    theme_id = fields.Int(required=True)
 
 
 @blueprint.route('/<int:poll_id>/votes', methods=['POST'])
