@@ -1,12 +1,12 @@
 import pytest
 
-from thupoll.blueprints.telegram.auth import AuthAdapter
+from thupoll.blueprints.telegram.auth import TokenAdapter
 from thupoll import models as m
 
 
 @pytest.fixture
 def auth(faker, db_session):
-    return AuthAdapter(db_session, faker.random.randrange(100))
+    return TokenAdapter(db_session, faker.random.randrange(100))
 
 
 @pytest.mark.filterwarnings("ignore")

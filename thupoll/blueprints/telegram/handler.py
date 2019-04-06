@@ -1,8 +1,9 @@
 import telegram  # noqa: F401
 from telegram.chat import Chat
+from telegram.ext import BaseFilter
 
 from thupoll.blueprints.telegram import logger
-from thupoll.blueprints.telegram.auth import AuthAdapter
+from thupoll.blueprints.telegram.auth import AuthAdapter, TokenAdapter
 from thupoll.blueprints.telegram.utils import generate_invite_link
 from thupoll.models import db
 
@@ -29,7 +30,7 @@ class InviteHandler:
         :param adapter: over
         """
 
-        adapter = adapter or AuthAdapter(db.session, self.token_ttl_days)
+        adapter = adapter or TokenAdapter(db.session, self.token_ttl_days)
         message = update.message  # type: telegram.Message
         user = message.from_user  # type: telegram.User
 
@@ -56,3 +57,47 @@ class InviteHandler:
             parse_mode=telegram.ParseMode.MARKDOWN,
             disable_web_page_preview=True,
         )
+
+
+class ChatMembersHandler:
+    WELCOME = ('Welcome, {name}! Send me private message for getting access '
+               'to our beautiful poll service.')
+    GOODBYE = 'Goodbye, {name}!'
+
+    def on_join(self, bot, update, adapter=None):
+        adapter = adapter or AuthAdapter(db.session)
+        message = update.message  # type: telegram.Message
+
+        for user in message.new_chat_members:
+            if not adapter.exist_user(user.username):
+                bot.send_message(
+                    chat_id=message.chat_id,
+                    text=self.WELCOME.format(name=user.full_name),
+                    parse_mode=telegram.ParseMode.MARKDOWN,
+                )
+
+    def on_left(self, bot, update, adapter=None):
+        adapter = adapter or AuthAdapter(db.session)
+        message = update.message  # type: telegram.Message
+        user = message.left_chat_member
+
+        if adapter.exist_user(user.username):
+            bot.send_message(
+                chat_id=message.chat_id,
+                text=self.GOODBYE.format(name=user.full_name),
+                parse_mode=telegram.ParseMode.MARKDOWN,
+            )
+
+
+class MemberJoinFilter(BaseFilter):
+    def filter(self, message: telegram.Message):
+        return bool(message.new_chat_members)
+
+
+class MemberLeftFilter(BaseFilter):
+    def filter(self, message: telegram.Message):
+        return bool(message.left_chat_member)
+
+
+join_filter = MemberJoinFilter()
+left_filter = MemberJoinFilter()

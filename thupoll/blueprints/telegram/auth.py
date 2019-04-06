@@ -5,10 +5,8 @@ from thupoll.blueprints.telegram.error import BotAuthException
 
 
 class AuthAdapter:
-    """Authorization logic"""
-    def __init__(self, session, token_ttl_days):
+    def __init__(self, session):
         self.session = session
-        self.token_ttl_days = token_ttl_days
 
     def exist_user(self, identifier):
         """Check existence user in database by identifier"""
@@ -21,6 +19,12 @@ class AuthAdapter:
         query = self.session.query(query)
 
         return query.scalar()
+
+
+class TokenAdapter(AuthAdapter):
+    def __init__(self, session, token_ttl_days):
+        super(TokenAdapter, self).__init__(session=session)
+        self.token_ttl_days = token_ttl_days
 
     def generate_token(self, identifier):
         """Generate user token in database by identifier"""
