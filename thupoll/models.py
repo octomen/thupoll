@@ -18,6 +18,9 @@ class _Query(BaseQuery):  # out of the box it can `get_or_404` only
     def one_or_404(self, ):
         return self.one_or_abort(http_status=404)
 
+    def by_telegram(self, telegram_login):
+        return self.filter(People.telegram_login == str(telegram_login))
+
 
 db = SQLAlchemy(query_class=_Query)
 

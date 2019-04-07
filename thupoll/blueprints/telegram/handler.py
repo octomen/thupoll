@@ -2,6 +2,7 @@ import telegram  # noqa: F401
 from telegram.chat import Chat
 from telegram.ext import BaseFilter
 
+from thupoll import validators
 from thupoll.blueprints.telegram import logger
 from thupoll.blueprints.telegram.auth import TokenAdapter, RegistrationAdapter
 from thupoll.blueprints.telegram.utils import generate_invite_link
@@ -64,49 +65,62 @@ class ChatMembersHandler:
                'to our beautiful poll service.')
     GOODBYE = 'Goodbye, {name}!'
 
-    def __init__(self, chats):
-        self.chats = chats
-
     def on_join(self, bot, update, adapter=None):
         adapter = adapter or RegistrationAdapter(db.session)
         message = update.message  # type: telegram.Message
-        if message.chat_id not in self.chats:
+
+        logger.info(
+            '%s joined to %s', message.new_chat_members, message.chat_id)
+
+        try:
+            namespace = validators.namespace_chat_id(
+                chat_id=message.chat_id, must_exists=True,
+            )
+        except validators.ValidationError:
             return
 
-        # TODO create also peoplenamespace?
-        new_people = tuple(
-            adapter.create_inhabitant(
+        peoplenamespace_gen = (
+            adapter.bind_inhabitant(
                 name=user.username, telegram_login=user.id,
+                namespace=namespace,
             )
             for user in message.new_chat_members
-            if not adapter.exist_user(user.id) and not user.is_bot
+            if not user.is_bot
         )
-        if not new_people:
+        new_peoplenamespace = tuple(pn for pn in peoplenamespace_gen if pn)
+        if not new_peoplenamespace:
             return
 
+        db.session.commit()
         bot.send_message(
             chat_id=message.chat_id,
             text=self.WELCOME,
             parse_mode=telegram.ParseMode.MARKDOWN,
             reply_to_message_id=message.message_id,
         )
+        logger.info(
+            'added %s members to %s', len(new_peoplenamespace), namespace.code)
 
     def on_left(self, bot, update, adapter=None):
         adapter = adapter or RegistrationAdapter(db.session)
         message = update.message  # type: telegram.Message
-        if message.chat_id not in self.chats:
+
+        try:
+            namespace = validators.namespace_chat_id(
+                chat_id=message.chat_id, must_exists=True,
+            )
+        except validators.ValidationError:
             return
 
         user = message.left_chat_member  # type: telegram.User
 
-        if not adapter.exist_user(user.id) or user.is_bot:
-            return
-
-        bot.send_message(
-            chat_id=message.chat_id,
-            text=self.GOODBYE.format(name=user.first_name),
-            parse_mode=telegram.ParseMode.MARKDOWN,
-        )
+        if adapter.unbind_people(namespace=namespace, telegram_login=user.id):
+            bot.send_message(
+                chat_id=message.chat_id,
+                text=self.GOODBYE.format(name=user.first_name),
+                parse_mode=telegram.ParseMode.MARKDOWN,
+            )
+            logger.info('remove %s from %s', user.username, namespace.code)
 
 
 class MemberJoinFilter(BaseFilter):
