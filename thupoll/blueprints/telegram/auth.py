@@ -21,6 +21,16 @@ class AuthAdapter:
         return query.scalar()
 
 
+class RegistrationAdapter(AuthAdapter):
+    def create_inhabitant(self, name: str, telegram_login: str) -> m.People:
+        people = m.People(
+            name=name, telegram_login=telegram_login,
+            role_id=m.Role.INHABITANT,
+        )
+        self.session.add(people)
+        return people
+
+
 class TokenAdapter(AuthAdapter):
     def __init__(self, session, token_ttl_days):
         super(TokenAdapter, self).__init__(session=session)

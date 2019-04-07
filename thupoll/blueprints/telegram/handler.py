@@ -3,7 +3,7 @@ from telegram.chat import Chat
 from telegram.ext import BaseFilter
 
 from thupoll.blueprints.telegram import logger
-from thupoll.blueprints.telegram.auth import AuthAdapter, TokenAdapter
+from thupoll.blueprints.telegram.auth import TokenAdapter, RegistrationAdapter
 from thupoll.blueprints.telegram.utils import generate_invite_link
 from thupoll.models import db
 
@@ -60,7 +60,7 @@ class InviteHandler:
 
 
 class ChatMembersHandler:
-    WELCOME = ('Welcome, {name}! Send me private message for getting access '
+    WELCOME = ('Welcome! Send me private message for getting access '
                'to our beautiful poll service.')
     GOODBYE = 'Goodbye, {name}!'
 
@@ -68,33 +68,45 @@ class ChatMembersHandler:
         self.chats = chats
 
     def on_join(self, bot, update, adapter=None):
-        adapter = adapter or AuthAdapter(db.session)
+        adapter = adapter or RegistrationAdapter(db.session)
         message = update.message  # type: telegram.Message
         if message.chat_id not in self.chats:
             return
 
-        for user in message.new_chat_members:
-            if not adapter.exist_user(user.username):
-                bot.send_message(
-                    chat_id=message.chat_id,
-                    text=self.WELCOME.format(name=user.full_name),
-                    parse_mode=telegram.ParseMode.MARKDOWN,
-                )
+        # TODO create also peoplenamespace?
+        new_people = tuple(
+            adapter.create_inhabitant(
+                name=user.username, telegram_login=user.id,
+            )
+            for user in message.new_chat_members
+            if not adapter.exist_user(user.id) and not user.is_bot
+        )
+        if not new_people:
+            return
+
+        bot.send_message(
+            chat_id=message.chat_id,
+            text=self.WELCOME,
+            parse_mode=telegram.ParseMode.MARKDOWN,
+            reply_to_message_id=message.message_id,
+        )
 
     def on_left(self, bot, update, adapter=None):
-        adapter = adapter or AuthAdapter(db.session)
+        adapter = adapter or RegistrationAdapter(db.session)
         message = update.message  # type: telegram.Message
         if message.chat_id not in self.chats:
             return
 
-        user = message.left_chat_member
+        user = message.left_chat_member  # type: telegram.User
 
-        if adapter.exist_user(user.username):
-            bot.send_message(
-                chat_id=message.chat_id,
-                text=self.GOODBYE.format(name=user.full_name),
-                parse_mode=telegram.ParseMode.MARKDOWN,
-            )
+        if not adapter.exist_user(user.id) or user.is_bot:
+            return
+
+        bot.send_message(
+            chat_id=message.chat_id,
+            text=self.GOODBYE.format(name=user.first_name),
+            parse_mode=telegram.ParseMode.MARKDOWN,
+        )
 
 
 class MemberJoinFilter(BaseFilter):
