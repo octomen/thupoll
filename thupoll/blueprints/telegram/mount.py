@@ -10,6 +10,6 @@ def mount(hook: TelegramHook):
     hook.mount_command("invite", invite_handler.invite)
     hook.mount_command("start", invite_handler.invite)
 
-    members_handler = ChatMembersHandler()
+    members_handler = ChatMembersHandler(chats=env.monitored_chats)
     hook.mount_message_handler(join_filter, members_handler.on_join)
     hook.mount_message_handler(left_filter, members_handler.on_left)

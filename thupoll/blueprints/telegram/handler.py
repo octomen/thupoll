@@ -64,9 +64,14 @@ class ChatMembersHandler:
                'to our beautiful poll service.')
     GOODBYE = 'Goodbye, {name}!'
 
+    def __init__(self, chats):
+        self.chats = chats
+
     def on_join(self, bot, update, adapter=None):
         adapter = adapter or AuthAdapter(db.session)
         message = update.message  # type: telegram.Message
+        if message.chat_id not in self.chats:
+            return
 
         for user in message.new_chat_members:
             if not adapter.exist_user(user.username):
@@ -79,6 +84,9 @@ class ChatMembersHandler:
     def on_left(self, bot, update, adapter=None):
         adapter = adapter or AuthAdapter(db.session)
         message = update.message  # type: telegram.Message
+        if message.chat_id not in self.chats:
+            return
+
         user = message.left_chat_member
 
         if adapter.exist_user(user.username):

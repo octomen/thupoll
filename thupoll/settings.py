@@ -7,6 +7,11 @@ class Environ(Env):
     DEFAULT_URL = 'http://localhost:5000'
     DEFAULT_TELEGRAM_TOKEN = '123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 
+    def __init__(self):
+        super(Environ, self).__init__()
+        chats = self('MONITORED_CHATS', None)
+        self.__chats = {int(i) for i in chats.split(',')} if chats else set()
+
     @property
     def db_url(self):
         return self('DB_URL', self.DEFAULT_DB)
@@ -34,6 +39,10 @@ class Environ(Env):
     @property
     def env_path(self):
         return pathlib.Path(__file__).parent
+
+    @property
+    def monitored_chats(self):
+        return self.__chats
 
 
 env = Environ()
