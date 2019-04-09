@@ -1,8 +1,7 @@
-import typing
-
 from datetime import datetime
 from flask import abort, g
 from marshmallow.exceptions import ValidationError
+from typing import Iterator, Optional as Op
 
 from thupoll import models
 from thupoll.utils import assert_auth
@@ -14,7 +13,7 @@ from thupoll.utils import assert_auth
 def people_id(
         value: int,
         must_exists: bool = True,
-):
+) -> Op[models.People]:
     if not value:
         return
     obj = models.db.session.query(models.People).get(value)
@@ -27,7 +26,7 @@ def people_id(
 def theme_status_id(
         value: int,
         must_exists: bool = True,
-):
+) -> Op[models.ThemeStatus]:
     if not value:
         return
     obj = models.db.session.query(models.ThemeStatus).get(value)
@@ -40,7 +39,7 @@ def theme_status_id(
 def theme_id(
         value: int,
         must_exists: bool = True,
-):
+) -> Op[models.Theme]:
     if not value:
         return
     obj = models.db.session.query(models.Theme).get(value)
@@ -53,7 +52,7 @@ def theme_id(
 def poll_id(
         value: int,
         must_exists: bool = True,
-):
+) -> Op[models.Poll]:
     if not value:
         return
     obj = models.db.session.query(models.Poll).get(value)
@@ -67,7 +66,7 @@ def themepoll(
         theme_id: int,
         poll_id: int,
         must_exists: bool = True,
-):
+) -> Op[models.ThemePoll]:
     obj = models.db.session.query(
         models.ThemePoll
     ).filter_by(
@@ -92,15 +91,20 @@ def future_datetime_validator(date: datetime):
         raise ValidationError('Datetime {} from past'.format(date))
 
 
-def distinct(iterable: typing.Iterator, name, fetcher=lambda x: x):
+def distinct(iterable: Iterator, name, fetcher=lambda x: x):
     if len(set(map(fetcher, iterable))) != len(iterable):
         raise ValidationError('Duplication values of {}'.format(name))
+
+
+def dataful(seq_name: str, sequence: Iterator):
+    if len(sequence) == 0:
+        raise ValidationError("Sequence {!r} is empty".format(seq_name))
 
 
 def namespace_code(
         value: str,
         must_exists: bool,
-):
+) -> Op[models.Namespace]:
     if not value:
         return
     obj = models.db.session.query(models.Namespace).get(value)

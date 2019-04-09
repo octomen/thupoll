@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, jsonify, abort, g
+from flask import Blueprint, jsonify, abort, g, Response
 from marshmallow import Schema
 from webargs import fields
 from webargs.flaskparser import use_kwargs, use_args
@@ -152,15 +152,36 @@ def set_themes(themes, poll_id):
 def get_votes(poll_id):
     logger.info('Votes for poll %s', poll_id)
 
-    poll: Poll = validators.poll_id(poll_id, must_exists=True)
+    poll = validators.poll_id(poll_id, must_exists=True)
     validators.namespace_access(poll.namespace_code)
 
     votes = db.session.query(Vote).join(
-        ThemePoll
+        ThemePoll,
     ).filter(
         ThemePoll.poll == poll,
     )
     return jsonify(dict(results=[obj.marshall() for obj in votes]))
+
+
+@blueprint.route('/<int:poll_id>/votes', methods=['DELETE'])
+@for_auth
+def del_votes(poll_id):
+    logger.info('Delete votes for poll %s', poll_id)
+
+    poll = validators.poll_id(poll_id, must_exists=True)
+    validators.future_datetime_validator(poll.expire_date)
+    validators.namespace_access(poll.namespace_code)
+
+    sq = db.session.query(Vote.id).join(ThemePoll).filter(
+        ThemePoll.poll_id == poll_id,
+        Vote.people_id == g.people.id,
+    ).subquery()
+
+    db.session.query(Vote).filter(
+        Vote.id.in_(sq),
+    ).delete(synchronize_session=False)
+
+    return Response(status=200)
 
 
 class ThemeArg(Schema):
@@ -173,8 +194,9 @@ class ThemeArg(Schema):
 def set_votes(themes, poll_id):
     logger.info('Poll %s. Votes for themes %s', poll_id, themes)
 
-    poll: Poll = validators.poll_id(poll_id, must_exists=True)
+    poll = validators.poll_id(poll_id, must_exists=True)
 
+    validators.dataful("themes", themes)
     validators.future_datetime_validator(poll.expire_date)
     validators.namespace_access(poll.namespace_code)
     validators.distinct(
@@ -185,16 +207,12 @@ def set_votes(themes, poll_id):
         themepolls.append(
             validators.themepoll(
                 theme_id=theme['theme_id'],
-                poll_id=poll_id
-            )
+                poll_id=poll_id,
+            ),
         )
 
     # delete previous state of votes
-    db.session.query(Vote).filter(
-        ThemePoll.id == Vote.themepoll_id,
-        ThemePoll.poll_id == poll_id,
-        Vote.people_id == g.people.id,
-    ).delete(synchronize_session=False)
+    del_votes(poll_id=poll_id)
 
     # create new state of themes
     for themepoll in themepolls:
@@ -208,4 +226,4 @@ def set_votes(themes, poll_id):
         'Poll %s. %s votes was set (for themes %s)',
         poll_id, len(themes), themes)
 
-    return get_votes(poll_id=poll_id)
+    return get_one(poll_id=poll_id)

@@ -15,7 +15,7 @@ class _Query(BaseQuery):  # out of the box it can `get_or_404` only
             abort(http_status)
         return obj
 
-    def one_or_404(self, ):
+    def one_or_404(self):
         return self.one_or_abort(http_status=404)
 
 
@@ -235,6 +235,11 @@ class Poll(_BaseModel):
         back_populates="polls",
         lazy='joined',
     )
+    votes = relationship(
+        "Vote",
+        secondary="theme_poll",
+        lazy='joined',
+    )
 
     def marshall(self) -> dict:
         return dict(
@@ -243,7 +248,8 @@ class Poll(_BaseModel):
             meet_date=self.meet_date,
             created=self.created_date,
             updated=self.change_date,
-            themes=[theme.marshall() for theme in self.themes]
+            themes=[theme.marshall() for theme in self.themes],
+            votes=[vote.marshall() for vote in self.votes],
         )
 
 

@@ -33,16 +33,16 @@ def _post_votes(client, poll_id, themes, headers) -> Response:
 
 
 def test__set_any_votes__correct(
-    db_session, client, peoplenamespace, user_headers, poll
+    db_session, client, peoplenamespace, user_headers, poll,
 ):
     theme = Factory.themepoll(poll=poll).theme
     r = _post_votes(
-        client=client, poll_id=poll.id, themes=[theme], headers=user_headers
+        client=client, poll_id=poll.id, themes=[theme], headers=user_headers,
     )
 
     db_session.add(peoplenamespace)
     assert r.status_code == 200, r.get_json()
-    vote = r.get_json()["results"][0]
+    vote = r.get_json()["results"]["votes"][0]
 
     assert vote["people_id"] == peoplenamespace.people_id
     assert vote["pole_id"] == poll.id
@@ -50,59 +50,42 @@ def test__set_any_votes__correct(
 
 
 def test__set_any_votes__expire(
-        db_session, client, peoplenamespace, user_headers
+        db_session, client, peoplenamespace, user_headers,
 ):
     poll = Factory.poll(
-        expire_date=get_past_datetime(), namespace=peoplenamespace.namespace
+        expire_date=get_past_datetime(), namespace=peoplenamespace.namespace,
     )
     theme = Factory.themepoll(poll=poll).theme
     r = _post_votes(
-        client=client, poll_id=poll.id, themes=[theme], headers=user_headers
+        client=client, poll_id=poll.id, themes=[theme], headers=user_headers,
     )
 
     assert r.status_code == 422, r.get_json()
     assert r.get_json() == {
-        "_schema": ["Datetime {} from past".format(poll.expire_date)]
+        "_schema": ["Datetime {} from past".format(poll.expire_date)],
     }
 
 
 def test__set_any_votes__not_themepoll(
-    db_session, client, peoplenamespace, user_headers, poll
+    db_session, client, peoplenamespace, user_headers, poll,
 ):
     theme = Factory.themepoll().theme
     r = _post_votes(
-        client=client, poll_id=poll.id, themes=[theme], headers=user_headers
+        client=client, poll_id=poll.id, themes=[theme], headers=user_headers,
     )
 
     assert r.status_code == 422, r.get_json()
     assert r.get_json() == {
         "_schema": [
             "ThemePoll with poll_id={} theme_id={} does not exists".format(
-                poll.id, theme.id
-            )
-        ]
+                poll.id, theme.id,
+            ),
+        ],
     }
 
 
-def test__set_any_votes__drop_old(
-    db_session, client, peoplenamespace, user_headers, poll
-):
-    themepoll = Factory.themepoll(poll=poll)
-    Factory.vote(themepoll=themepoll, people=peoplenamespace.people)
-
-    r = _post_votes(
-        client=client,
-        poll_id=poll.id,
-        themes=[],
-        headers=user_headers
-    )
-
-    assert r.status_code == 200, r.get_json()
-    assert 0 == len(db_session.query(Vote).all())
-
-
 def test__set_any_votes__two_theme(
-    db_session, client, peoplenamespace, user_headers, poll
+    db_session, client, peoplenamespace, user_headers, poll,
 ):
     theme1 = Factory.themepoll(poll=poll).theme
     theme2 = Factory.themepoll(poll=poll).theme
@@ -110,8 +93,37 @@ def test__set_any_votes__two_theme(
         client=client,
         poll_id=poll.id,
         themes=[theme1, theme2],
-        headers=user_headers
+        headers=user_headers,
     )
 
     assert r.status_code == 200, r.get_json()
-    assert 2 == len(r.get_json()["results"])
+    assert len(r.get_json()["results"]["votes"]) == 2
+
+
+def test__set_any_votes__empty_json(
+    db_session, client, peoplenamespace, user_headers, poll,
+):
+    r = _post_votes(
+        client=client,
+        poll_id=poll.id,
+        themes=[],
+        headers=user_headers,
+    )
+
+    assert r.status_code == 422, r.get_json()
+    assert r.get_json() == {"_schema": ["Sequence 'themes' is empty"]}
+
+
+def test__set_any_votes__drop_old(
+    db_session, client, peoplenamespace, user_headers, poll,
+):
+    themepoll = Factory.themepoll(poll=poll)
+    Factory.vote(themepoll=themepoll, people=peoplenamespace.people)
+
+    r = client.delete(
+        "/polls/{}/votes".format(poll.id),
+        headers=user_headers,
+    )
+
+    assert r.status_code == 200, r.get_json()
+    assert not db_session.query(Vote).count()

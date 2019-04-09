@@ -5,6 +5,7 @@ from tests.factories import Factory
 
 def test__marshall():
     themepoll = Factory.themepoll()
+    vote = Factory.vote(themepoll=themepoll)
     poll = themepoll.poll
     assert marshall(poll) == dict(
         id=poll.id,
@@ -13,6 +14,7 @@ def test__marshall():
         created=poll.created_date.isoformat(),
         updated=poll.change_date.isoformat(),
         themes=[marshall(themepoll.theme)],
+        votes=[marshall(vote)],
     )
 
 
@@ -136,7 +138,7 @@ def test__get_one__denied_by_no_auth(client):
     poll = Factory.poll()
     r = client.get(
         '/polls/{}'.format(poll.id),
-        json={'namespace_code': poll.namespace.code}
+        json={'namespace_code': poll.namespace.code},
     )
     assert r.status_code == 401, r.get_json()
 
