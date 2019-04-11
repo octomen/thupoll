@@ -35,17 +35,19 @@ def _post_votes(client, poll_id, themes, headers) -> Response:
 def test__set_any_votes__correct(
     db_session, client, peoplenamespace, user_headers, poll,
 ):
+    people_id = peoplenamespace.people_id
+    poll_id = poll.id
+
     theme = Factory.themepoll(poll=poll).theme
     r = _post_votes(
-        client=client, poll_id=poll.id, themes=[theme], headers=user_headers,
+        client=client, poll_id=poll_id, themes=[theme], headers=user_headers,
     )
 
-    db_session.add(peoplenamespace)
     assert r.status_code == 200, r.get_json()
     vote = r.get_json()["results"]["votes"][0]
 
-    assert vote["people_id"] == peoplenamespace.people_id
-    assert vote["pole_id"] == poll.id
+    assert vote["people_id"] == people_id
+    assert vote["pole_id"] == poll_id
     assert vote["theme_id"] == theme.id
 
 
