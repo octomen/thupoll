@@ -234,7 +234,12 @@ class Poll(_BaseModel):
         secondary="theme_poll",
         back_populates="polls",
         lazy='joined',
+        order_by=lambda: ThemePoll.order_no,
     )
+
+    __mapper_args__ = {
+        'order_by': [expire_date, meet_date],
+    }
 
     def marshall(self) -> dict:
         return dict(

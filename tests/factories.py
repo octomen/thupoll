@@ -46,7 +46,7 @@ class PeopleFactory(BaseFactory):
         model = models.People
 
     role_id = models.Role.INHABITANT
-    telegram_login = factory.Faker('name')
+    telegram_login = factory.Sequence(lambda n: '123-555-%04d' % n)
     name = factory.Faker('name')
     session = factory.RelatedFactory(SessionFactory, 'people')
 

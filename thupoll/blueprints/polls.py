@@ -26,7 +26,7 @@ def get_all(namespace_code):
         abort(403)  # TODO return all accessed objects
     elif namespace_code:
         q = q.filter_by(namespace_code=namespace_code)
-    return jsonify(dict(results=[obj.marshall() for obj in q]))
+    return jsonify(dict(results=[obj.marshall() for obj in q.all()]))
 
 
 @blueprint.route('/<int:poll_id>')
