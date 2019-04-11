@@ -120,7 +120,7 @@ def namespace_chat_id(
     if must_exists == bool(obj):
         return obj
     raise ValidationError(__exists_error_message(
-        'Namespace', 'code={}'.format(chat_id), must_exists=must_exists))
+        'Namespace', 'chat_id={}'.format(chat_id), must_exists=must_exists))
 
 
 def namespace_access(
