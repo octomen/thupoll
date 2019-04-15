@@ -62,7 +62,7 @@ class NamespaceFactory(BaseFactory):
 
     code = factory.Faker('text')
     name = factory.Faker('text')
-    telegram_chat_id = int_between(0, 10000)
+    telegram_chat_id = factory.Sequence(lambda n: n)
 
 
 class PeopleNamespaceFactory(BaseFactory):
