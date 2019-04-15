@@ -237,10 +237,6 @@ class Poll(_BaseModel):
         order_by=lambda: ThemePoll.order_no,
     )
 
-    __mapper_args__ = {
-        'order_by': [expire_date, meet_date],
-    }
-
     def marshall(self) -> dict:
         return dict(
             id=self.id,

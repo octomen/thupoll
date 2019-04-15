@@ -20,12 +20,12 @@ logger = logging.getLogger(__name__)
 def get_all(namespace_code):
     logger.info('Themes. Get info all')
     validators.namespace_access(namespace_code)
-    q = db.session.query(Theme)
+    q = db.session.query(Theme).order_by(Theme.created_date)
     if not namespace_code and not g.people.is_admin():
         abort(403)  # TODO return all accessed objects
     elif namespace_code:
         q = q.filter_by(namespace_code=namespace_code)
-    return jsonify(dict(results=[obj.marshall() for obj in q.all()]))
+    return jsonify(dict(results=[obj.marshall() for obj in q]))
 
 
 @blueprint.route('/<int:theme_id>')

@@ -1,4 +1,5 @@
 import factory
+from datetime import datetime
 import random
 import string
 from faker import Faker
@@ -83,6 +84,7 @@ class ThemeFactory(BaseFactory):
     author = factory.SubFactory(PeopleFactory)
     reporter = factory.SubFactory(PeopleFactory)
     namespace = factory.SubFactory(NamespaceFactory)
+    created_date = factory.LazyFunction(datetime.now)
 
 
 class PollFactory(BaseFactory):

@@ -3,7 +3,7 @@ import pytest
 from thupoll.models import db, Theme, ThemeStatus
 
 from tests.utils import marshall
-from tests.factories import Factory
+from tests.factories import Factory, date_between
 
 
 def test__marshall(theme):
@@ -55,6 +55,22 @@ def test__all__one_theme(client, theme, user_headers):
     assert r.status_code == 200, r.get_json()
     db.session.add(theme)
     assert r.get_json() == dict(results=[marshall(theme)])
+
+
+def test__all__with_sort(client, namespace, admin_headers):
+    for _ in range(50):
+        Factory.theme(
+            namespace=namespace,
+            created_date=date_between('+1d', '+50d'))
+
+    r = client.get(
+        '/polls',
+        json={'namespace_code': namespace.code},
+        headers=admin_headers,
+    )
+    assert r.status_code == 200, r.get_json()
+    dates = [poll['created'] for poll in r.get_json()['results']]
+    assert dates == sorted(dates)
 
 
 def test__create__correct(client):
