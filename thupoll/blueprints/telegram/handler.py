@@ -4,7 +4,7 @@ from telegram.ext import BaseFilter
 
 from thupoll import validators
 from thupoll.blueprints.telegram import logger
-from thupoll.blueprints.telegram.auth import TokenAdapter, RegistrationAdapter
+from thupoll.blueprints.telegram.auth import AuthAdapter, RegistrationAdapter
 from thupoll.blueprints.telegram.utils import generate_invite_link
 from thupoll.models import db
 
@@ -31,7 +31,7 @@ class InviteHandler:
         :param adapter: over
         """
 
-        adapter = adapter or TokenAdapter(db.session, self.token_ttl_days)
+        adapter = adapter or AuthAdapter(db.session, self.token_ttl_days)
         message = update.message  # type: telegram.Message
         user = message.from_user  # type: telegram.User
 

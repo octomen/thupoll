@@ -20,7 +20,7 @@ def adapter(db_session):
 
 
 @pytest.fixture
-def bot(db_session):
+def bot():
     return Mock()
 
 
