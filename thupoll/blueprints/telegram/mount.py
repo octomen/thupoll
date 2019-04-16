@@ -1,6 +1,8 @@
 from thupoll.blueprints.telegram.hook import TelegramHook
 from thupoll.blueprints.telegram.handler import (
-    InviteHandler, join_filter, left_filter, ChatMembersHandler)
+    InviteHandler, ChatMembersHandler)
+from thupoll.blueprints.telegram.filters import (
+    MemberJoinFilter, MemberLeftFilter)
 from thupoll.settings import env
 
 
@@ -11,5 +13,5 @@ def mount(hook: TelegramHook):
     hook.mount_command("start", invite_handler.invite)
 
     members_handler = ChatMembersHandler()
-    hook.mount_message_handler(join_filter, members_handler.on_join)
-    hook.mount_message_handler(left_filter, members_handler.on_left)
+    hook.mount_message_handler(MemberJoinFilter(), members_handler.on_join)
+    hook.mount_message_handler(MemberLeftFilter(), members_handler.on_left)

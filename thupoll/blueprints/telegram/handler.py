@@ -1,6 +1,5 @@
 import telegram  # noqa: F401
 from telegram.chat import Chat
-from telegram.ext import BaseFilter
 
 from thupoll import validators
 from thupoll.blueprints.telegram import logger
@@ -121,17 +120,3 @@ class ChatMembersHandler:
                 parse_mode=telegram.ParseMode.MARKDOWN,
             )
             logger.info('remove %s from %s', user.username, namespace.code)
-
-
-class MemberJoinFilter(BaseFilter):
-    def filter(self, message: telegram.Message):
-        return bool(message.new_chat_members)
-
-
-class MemberLeftFilter(BaseFilter):
-    def filter(self, message: telegram.Message):
-        return bool(message.left_chat_member)
-
-
-join_filter = MemberJoinFilter()
-left_filter = MemberJoinFilter()
