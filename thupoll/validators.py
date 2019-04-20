@@ -97,6 +97,14 @@ def distinct(iterable: typing.Iterator, name, fetcher=lambda x: x):
         raise ValidationError('Duplication values of {}'.format(name))
 
 
+def theme_reporter_namespace(theme: models.Theme):
+    if theme.namespace not in theme.reporter.namespaces:
+        raise ValidationError(
+            'Reporter {} has no access to theme namespace ({})'.format(
+                theme.reporter, theme.namespace,
+            ))
+
+
 def namespace_code(
         value: str,
         must_exists: bool,
