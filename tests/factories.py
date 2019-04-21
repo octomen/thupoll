@@ -1,4 +1,5 @@
 import factory
+from datetime import datetime
 import random
 import string
 from faker import Faker
@@ -46,7 +47,7 @@ class PeopleFactory(BaseFactory):
         model = models.People
 
     role_id = models.Role.INHABITANT
-    telegram_login = factory.Faker('name')
+    telegram_login = factory.Sequence(lambda n: '123-555-%04d' % n)
     name = factory.Faker('name')
     session = factory.RelatedFactory(SessionFactory, 'people')
 
@@ -61,7 +62,7 @@ class NamespaceFactory(BaseFactory):
 
     code = factory.Faker('text')
     name = factory.Faker('text')
-    telegram_chat_id = int_between(0, 10000)
+    telegram_chat_id = factory.Sequence(lambda n: n)
 
 
 class PeopleNamespaceFactory(BaseFactory):
@@ -83,6 +84,7 @@ class ThemeFactory(BaseFactory):
     author = factory.SubFactory(PeopleFactory)
     reporter = factory.SubFactory(PeopleFactory)
     namespace = factory.SubFactory(NamespaceFactory)
+    created_date = factory.LazyFunction(datetime.now)
 
 
 class PollFactory(BaseFactory):
