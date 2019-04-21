@@ -1,7 +1,9 @@
 import datetime
+import random
+
 from thupoll.models import db, Poll
 from tests.utils import marshall
-from tests.factories import Factory
+from tests.factories import Factory, date_between
 
 
 def get_future_datetime(delta=30):
@@ -65,6 +67,29 @@ def test__one__correct(client, poll, user_headers):
     assert r.get_json() == dict(results=marshall(poll))
 
 
+def test__one__with_sort(client, poll, admin_headers):
+    objects_num = 50
+
+    order_nos = list(range(objects_num))
+    random.shuffle(order_nos)
+
+    themespolls = {}
+    for order_no in order_nos:
+        themepoll = Factory.themepoll(poll=poll, order_no=order_no)
+        themespolls[order_no] = themepoll.theme_id
+
+    r = client.get(
+        '/polls/{}'.format(poll.id),
+        json={'namespace_code': poll.namespace_code},
+        headers=admin_headers,
+    )
+    assert r.status_code == 200, r.get_json()
+
+    themes = [theme['id'] for theme in r.get_json()['results']['themes']]
+    for idx in range(objects_num):
+        assert themes[idx] == themespolls[idx]
+
+
 def test__all__empty_when_not_exists(client):
     peoplenamespace = Factory.peoplenamespace()
     r = client.get(
@@ -85,6 +110,25 @@ def test__all__one(client, poll, user_headers):
     assert r.status_code == 200, r.get_json()
     db.session.add(poll)
     assert r.get_json() == dict(results=[marshall(poll)])
+
+
+def test__all__with_sort(client, namespace, admin_headers):
+    for _ in range(50):
+        Factory.poll(
+            namespace=namespace,
+            expire_date=date_between('+1d', '+50d'))
+
+    r = client.get(
+        '/polls',
+        json={'namespace_code': namespace.code},
+        headers=admin_headers,
+    )
+    assert r.status_code == 200, r.get_json()
+    dates = [
+        (poll['expire_date'], poll['meet_date'])
+        for poll in r.get_json()['results']
+    ]
+    assert dates == sorted(dates)
 
 
 def test__create__admin_correct(client, admin_headers, namespace):

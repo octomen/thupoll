@@ -2,6 +2,7 @@ from queue import Queue
 from typing import Callable
 
 from telegram import Bot, Update, ext
+from telegram.ext import BaseFilter
 from telegram.utils.request import Request
 
 from thupoll.blueprints.telegram import logger
@@ -31,6 +32,11 @@ class TelegramHook:
         """Mount command handler to telegram hook"""
         self.dispatcher.add_handler(
             ext.CommandHandler(tag, handler, pass_chat_data=True))
+
+    def mount_message_handler(self, filters: BaseFilter, handler: Callable):
+        """Mount message handler to telegram hook"""
+        self.dispatcher.add_handler(
+            ext.MessageHandler(filters=filters, callback=handler))
 
     def handle(self, update):
         """

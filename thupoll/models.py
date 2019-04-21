@@ -234,6 +234,7 @@ class Poll(_BaseModel):
         secondary="theme_poll",
         back_populates="polls",
         lazy='joined',
+        order_by=lambda: ThemePoll.order_no,
     )
 
     def marshall(self) -> dict:

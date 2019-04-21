@@ -151,11 +151,11 @@ def theme(db_session, faker, peoplenamespace):
 
 
 @pytest.fixture(scope='function')
-def namespace(db_session, faker):
+def namespace(db_session, faker) -> Namespace:
     obj = Namespace(
         code=faker.text(max_nb_chars=50),
         name=faker.text(max_nb_chars=50),
-        telegram_chat_id=random.randint(0, 10000),
+        telegram_chat_id=random.randint(-10000, 0),
     )
     db_session.add(obj)
     db_session.commit()
@@ -163,7 +163,7 @@ def namespace(db_session, faker):
 
 
 @pytest.fixture(scope='function')
-def peoplenamespace(db_session, people, namespace):
+def peoplenamespace(db_session, people, namespace) -> PeopleNamespace:
     obj = PeopleNamespace(
         people_id=people.id,
         namespace_code=namespace.code,
