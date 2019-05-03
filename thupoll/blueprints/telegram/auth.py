@@ -15,18 +15,18 @@ class AuthAdapter(BaseAdapter):
         super(AuthAdapter, self).__init__(session=session)
         self.token_ttl_days = token_ttl_days
 
-    def exist_user(self, identifier):
+    def exist_user(self, identifier: int):
         """Check existence user in database by identifier"""
         query = self.session.query(m.People).filter(
-            m.People.telegram_login == str(identifier)).exists()
+            m.People.telegram_login == identifier).exists()
         query = self.session.query(query)
 
         return query.scalar()
 
-    def generate_token(self, identifier):
+    def generate_token(self, identifier: int):
         """Generate user token in database by identifier"""
         people = self.session.query(m.People).filter(
-            m.People.telegram_login == str(identifier)).one_or_none()
+            m.People.telegram_login == identifier).one_or_none()
 
         if people is None:
             raise BotAuthException(
@@ -51,7 +51,7 @@ class RegistrationAdapter(BaseAdapter):
         self, name: str, telegram_login: int, namespace: m.Namespace,
     ) -> Optional[m.PeopleNamespace]:
         people = self.session.query(m.People).filter(
-            m.People.telegram_login == str(telegram_login)).one_or_none()
+            m.People.telegram_login == telegram_login).one_or_none()
         if not people:
             people = m.People(
                 name=name, telegram_login=telegram_login,
@@ -82,7 +82,7 @@ class RegistrationAdapter(BaseAdapter):
             m.People,
         ).filter(
             m.PeopleNamespace.namespace == namespace,
-            m.People.telegram_login == str(telegram_login),
+            m.People.telegram_login == telegram_login,
         ).one_or_none()
         if not people_namespace:
             return False
