@@ -1,4 +1,4 @@
-from thupoll.models import db, ThemePoll, Role
+from thupoll.models import db, ThemePoll, Role, Poll
 
 from tests.utils import marshall
 from tests.factories import Factory
@@ -15,12 +15,11 @@ def test__set_any_themes__denied_by_no_admin(client, user_headers):
 
 
 def test__set_two_themes__correct_if_before_no_themes(client, admin_headers):
-    namespace = Factory.namespace()
-    reporter = Factory.people()
-    Factory.peoplenamespace(people=reporter, namespace=namespace)
-    theme1 = Factory.theme(namespace=namespace, reporter=reporter)
-    theme2 = Factory.theme(namespace=namespace, reporter=reporter)
     poll = Factory.poll()
+    reporter = Factory.people()
+    Factory.peoplenamespace(people=reporter, namespace=poll.namespace)
+    theme1 = Factory.theme(namespace=poll.namespace, reporter=reporter)
+    theme2 = Factory.theme(namespace=poll.namespace, reporter=reporter)
     r = client.post(
         '/polls/{}/themes'.format(poll.id),
         json=[
@@ -38,15 +37,14 @@ def test__set_two_themes__correct_if_before_no_themes(client, admin_headers):
 
 def test__set_two_themes_when_already_exists__change_order(
         client, admin_headers):
-    namespace = Factory.namespace()
+    poll = Factory.poll()
     reporter = Factory.people()
-    Factory.peoplenamespace(people=reporter, namespace=namespace)
-    theme1 = Factory.theme(namespace=namespace, reporter=reporter)
-    theme2 = Factory.theme(namespace=namespace, reporter=reporter)
+    Factory.peoplenamespace(people=reporter, namespace=poll.namespace)
+    theme1 = Factory.theme(namespace=poll.namespace, reporter=reporter)
+    theme2 = Factory.theme(namespace=poll.namespace, reporter=reporter)
 
     themepoll1 = Factory.themepoll(theme=theme1)
     themepoll2 = Factory.themepoll(theme=theme2)
-    poll = Factory.poll()
     r = client.post(
         '/polls/{}/themes'.format(poll.id),
         json=[
@@ -145,3 +143,56 @@ def test__add_with_reporter_from_another_namespace(
             'Reporter {} has no access to theme namespace ({})'.format(
                 reporter, sender_namespace,
             )]}
+
+
+def test__add_from_same_namespaces(client, poll: Poll, admin_headers):
+    assert not db.session.query(ThemePoll).filter_by(poll_id=poll.id).count()
+
+    reporter = Factory.people()
+    Factory.peoplenamespace(people=reporter, namespace=poll.namespace)
+
+    theme1 = Factory.theme(namespace=poll.namespace, reporter=reporter)
+    theme2 = Factory.theme(namespace=poll.namespace, reporter=reporter)
+
+    r = client.post(
+        '/polls/{}/themes'.format(poll.id),
+        json=[
+            dict(theme_id=theme1.id, order_no=1),
+            dict(theme_id=theme2.id, order_no=2),
+        ],
+        headers=admin_headers,
+    )
+    assert r.status_code == 200, r.get_json()
+    assert db.session.query(ThemePoll).filter_by(poll_id=poll.id).count() == 2
+
+
+def test__add_from_differents_namespaces(client, poll: Poll, admin_headers):
+    assert not db.session.query(ThemePoll).filter_by(poll_id=poll.id).count()
+
+    reporter1 = Factory.people()
+    Factory.peoplenamespace(people=reporter1, namespace=poll.namespace)
+    theme1 = Factory.theme(namespace=poll.namespace, reporter=reporter1)
+
+    people_namespace = Factory.peoplenamespace()
+    theme2 = Factory.theme(
+        namespace=people_namespace.namespace,
+        reporter=people_namespace.people)
+
+    expected_error = (
+        'Theme namespace ({}) and poll namespace ({}) must be the same, '
+        "but it's differ for theme_id = {}".format(
+            theme2.namespace.code, poll.namespace.code, theme2.id,
+        ))
+
+    r = client.post(
+        '/polls/{}/themes'.format(poll.id),
+        json=[
+            dict(theme_id=theme1.id, order_no=1),
+            dict(theme_id=theme2.id, order_no=2),
+        ],
+        headers=admin_headers,
+    )
+    assert r.status_code == 422, r.get_json()
+
+    assert r.get_json() == {'_schema': [expected_error]}
+    assert not db.session.query(ThemePoll).filter_by(poll_id=poll.id).count()

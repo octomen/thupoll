@@ -105,6 +105,15 @@ def theme_reporter_namespace(theme: models.Theme):
             ))
 
 
+def theme_poll_namespace(theme: models.Theme, poll: models.Poll):
+    if theme.namespace != poll.namespace:
+        raise ValidationError(
+            'Theme namespace ({}) and poll namespace ({}) must be the same, '
+            "but it's differ for theme_id = {}".format(
+                theme.namespace.code, poll.namespace.code, theme.id,
+            ))
+
+
 def namespace_code(
         value: str,
         must_exists: bool,
