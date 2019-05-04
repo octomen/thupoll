@@ -84,7 +84,7 @@ class People(_BaseModel):
     id = sa.Column(sa.Integer, primary_key=True)
     role_id = sa.Column(
         sa.Integer, sa.ForeignKey('role.id'), nullable=False)
-    telegram_login = sa.Column(sa.String, nullable=False, unique=True)
+    telegram_login = sa.Column(sa.BigInteger, nullable=False, unique=True)
     name = sa.Column(sa.String, nullable=False)
     created_date = sa.Column(
         sa.DateTime,
