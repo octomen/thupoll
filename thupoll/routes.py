@@ -3,7 +3,7 @@ from thupoll.blueprints.login import blueprint as login_blueprint
 from thupoll.blueprints.themes import blueprint as themes_blueprint
 from thupoll.blueprints.polls import blueprint as polls_blueprint
 from thupoll.blueprints.me import blueprint as me_blueprint
-from thupoll.blueprints.telegram.blueprint import telegram_blueprint
+from thupoll.blueprints.telegram import telegram_blueprint
 
 
 def routify(app):

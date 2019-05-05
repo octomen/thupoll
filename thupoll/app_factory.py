@@ -20,6 +20,7 @@ def init_app(db_url=env.db_url):
     routify(app=app)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+    app.config["SERVER_NAME"] = env.thupoll_url
 
     app.app_context().push()
     Migrate(app, db)

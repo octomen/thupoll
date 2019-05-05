@@ -3,8 +3,8 @@ import telegram
 from unittest.mock import Mock
 
 from thupoll import models as md
-from thupoll.blueprints.telegram.handler import InviteHandler
-from thupoll.blueprints.telegram.utils import generate_invite_link
+from thupoll.fronturl import FrontUrl
+from thupoll.telegram.handler import InviteHandler
 
 
 @pytest.fixture("function")
@@ -28,7 +28,6 @@ def test_not_exist_user(faker, handler):
 def test_generate_invite_link(handler, faker):
 
     update, adapter, bot = Mock(), Mock(), Mock()
-    url = handler.url
     token = faker.uuid4()
 
     update.message.from_user.full_name = faker.first_name()
@@ -42,7 +41,7 @@ def test_generate_invite_link(handler, faker):
         chat_id=update.message.chat_id,
         text=handler.LINK_TEMPLATE.format(
             name=update.message.from_user.full_name,
-            link=generate_invite_link(url, token)
+            link=FrontUrl.login(token)
         ),
         parse_mode=telegram.ParseMode.MARKDOWN,
         disable_web_page_preview=True,

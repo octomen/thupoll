@@ -1,10 +1,13 @@
 import logging
+import telegram
 from flask import Blueprint, jsonify, abort, g
 from marshmallow import Schema
 from webargs import fields
 from webargs.flaskparser import use_kwargs, use_args
 
 from thupoll import validators
+from thupoll.components import Components
+from thupoll.fronturl import FrontUrl
 from thupoll.models import db, Poll, ThemePoll
 from thupoll.utils import for_auth
 
@@ -145,3 +148,24 @@ def set_themes(themes, poll_id):
         poll_id, len(themes), themes)
 
     return get_one(poll_id=poll_id)
+
+
+@blueprint.route('/<int:poll_id>/alarms', methods=['POST'])
+@for_auth
+def alarm(poll_id):
+    poll = validators.poll_id(poll_id)
+    validators.namespace_access(poll.namespace.code, admin=True)
+
+    bot = Components.telegram_bot()
+    link = FrontUrl.poll(poll_id)
+    bot.send_message(
+        chat_id=poll.namespace.telegram_chat_id,
+        text="Hi, Everyone! Please, vote on the [link](%s)" % link,
+        parse_mode=telegram.ParseMode.MARKDOWN,
+    )
+
+    logger.info(
+        "Poll %s. Poll notification sent to telegram (chat_id=%s, link=%s)",
+        poll_id, poll.namespace.telegram_chat_id, link
+    )
+    return jsonify(dict(results="")), 200

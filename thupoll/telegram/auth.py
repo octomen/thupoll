@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 
 from thupoll import models as m
-from thupoll.blueprints.telegram.error import BotAuthException
+from thupoll.telegram.error import BotAuthException
 
 
 class BaseAdapter:

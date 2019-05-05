@@ -1,10 +1,14 @@
 import datetime
 import pytest
 import random
+import dependency_injector.containers as containers
+import dependency_injector.providers as providers
 from functools import partial
 from freezegun import freeze_time
+from unittest.mock import Mock
 
 from thupoll.app_factory import init_app
+from thupoll.components import Components
 from thupoll.models import (
     db, freeze_tables, People, Role, Theme, Session, Token, Poll,
     ThemePoll, Namespace, PeopleNamespace,
@@ -62,6 +66,21 @@ def truncate(db_session):
 def db_session(app):
     yield db.session
     db.session.close()
+
+
+##############
+# components #
+##############
+
+
+@containers.override(Components)
+class TestComponents(containers.DeclarativeContainer):
+    telegram_bot = providers.Singleton(Mock)
+
+
+@pytest.fixture
+def telgram_bot():
+    return Components.telegram_bot()
 
 
 ###########

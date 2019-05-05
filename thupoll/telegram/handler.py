@@ -2,10 +2,10 @@ import telegram  # noqa: F401
 from telegram.chat import Chat
 
 from thupoll import validators
-from thupoll.blueprints.telegram import logger
-from thupoll.blueprints.telegram.auth import AuthAdapter, RegistrationAdapter
-from thupoll.blueprints.telegram.utils import generate_invite_link
+from thupoll.fronturl import FrontUrl
 from thupoll.models import db
+from thupoll.telegram import logger
+from thupoll.telegram.auth import AuthAdapter, RegistrationAdapter
 
 
 class InviteHandler:
@@ -52,7 +52,7 @@ class InviteHandler:
             chat_id=message.chat_id,
             text=self.LINK_TEMPLATE.format(
                 name=user.full_name,
-                link=generate_invite_link(self.url, token),
+                link=FrontUrl.login(token),
             ),
             parse_mode=telegram.ParseMode.MARKDOWN,
             disable_web_page_preview=True,

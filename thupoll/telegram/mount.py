@@ -1,7 +1,7 @@
-from thupoll.blueprints.telegram.hook import TelegramHook
-from thupoll.blueprints.telegram.handler import (
+from thupoll.telegram.hook import TelegramHook
+from thupoll.telegram.handler import (
     InviteHandler, ChatMembersHandler)
-from thupoll.blueprints.telegram.filters import (
+from thupoll.telegram.filters import (
     MemberJoinFilter, MemberLeftFilter)
 from thupoll.settings import env
 

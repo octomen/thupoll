@@ -1,40 +1,25 @@
 from queue import Queue
 from typing import Callable
 
-from telegram import Bot, Update, ext
+from telegram import Update, ext
 from telegram.ext import BaseFilter
-from telegram.utils.request import Request
 
-from thupoll.blueprints.telegram import logger
+from thupoll.telegram import logger
 
 
 class TelegramHook:
-    """Telegram hook"""
-
-    def __init__(self, token, proxy=None):
-
-        # self.handler = Handler()
-
-        request = None
-        if proxy:
-            request = Request(proxy_url=proxy)
-
-        self.bot = Bot(
-            token,
-            request=request
-        )
+    def __init__(self, bot):
+        self.bot = bot
         self.dispatcher = ext.Dispatcher(
             self.bot,
             Queue()
         )
 
     def mount_command(self, tag: str, handler: Callable):
-        """Mount command handler to telegram hook"""
         self.dispatcher.add_handler(
             ext.CommandHandler(tag, handler, pass_chat_data=True))
 
     def mount_message_handler(self, filters: BaseFilter, handler: Callable):
-        """Mount message handler to telegram hook"""
         self.dispatcher.add_handler(
             ext.MessageHandler(filters=filters, callback=handler))
 

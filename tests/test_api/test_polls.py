@@ -1,7 +1,7 @@
 import datetime
 import random
 
-from thupoll.models import db, Poll
+from thupoll.models import db, Poll, Role
 from tests.utils import marshall
 from tests.factories import Factory, date_between
 
@@ -216,3 +216,37 @@ def test__delete__correct_by_admin(client, admin_headers):
     )
     assert r.status_code == 200, r.get_json()
     assert db.session.query(Poll).count() == 0
+
+
+def test__poll_alarm__correct(client, admin_headers, poll):
+    namespace = Factory.namespace()
+    poll = Factory.poll(namespace=namespace)
+    people = Factory.peoplenamespace(
+        role_id=Role.OCTOPUS,
+        namespace=namespace,
+    ).people
+    auth = Factory.authheader(people)
+    r = client.post(
+        "/polls/%s/alarms" % poll.id,
+        headers=auth,
+    )
+    assert r.status_code == 200, r.get_json()
+
+
+def test__poll_alarm__not_exist_poll(client, faker, user_headers):
+    poll_id = faker.pyint()
+    r = client.post(
+        "/polls/%s/alarms" % poll_id,
+        headers=user_headers,
+    )
+    assert r.status_code == 422, r.get_json()
+    assert r.get_json() == {
+        '_schema': ["Poll with id=%s does not exists" % poll_id]}
+
+
+def test__poll_alarm__not_admin(client, faker, poll, user_headers):
+    r = client.post(
+        "/polls/%s/alarms" % poll.id,
+        headers=user_headers,
+    )
+    assert r.status_code == 403, r.get_json()

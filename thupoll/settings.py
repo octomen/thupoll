@@ -4,7 +4,7 @@ from environs import Env
 
 class Environ(Env):
     DEFAULT_DB = 'postgresql://postgres@localhost:5432/postgres'
-    DEFAULT_URL = 'http://localhost:5000'
+    DEFAULT_URL = 'localhost:5000'
     DEFAULT_TELEGRAM_TOKEN = '123456789:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 
     @property

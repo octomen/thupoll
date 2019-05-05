@@ -1,6 +1,6 @@
 import pytest
 
-from thupoll.blueprints.telegram.auth import AuthAdapter
+from thupoll.telegram.auth import AuthAdapter
 from thupoll import models as m
 
 
