@@ -11,7 +11,7 @@ def auth(faker, db_session):
 
 @pytest.mark.filterwarnings("ignore")
 def test_exist_user(auth, db_session, people):
-    assert not auth.exist_user("some_name")
+    assert not auth.exist_user(666)
     assert auth.exist_user(people.telegram_login)
 
 

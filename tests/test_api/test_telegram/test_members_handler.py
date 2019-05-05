@@ -101,7 +101,7 @@ def test__create__when__unknown_user__join__monitored_chat(
     people = db_session.query(md.People).one()
     assert people.role_id == md.Role.INHABITANT
     assert people.name == member.username
-    assert people.telegram_login == str(member.id)
+    assert people.telegram_login == member.id
 
     people_namespace = db_session.query(md.PeopleNamespace).one()
     assert people_namespace.namespace_code == namespace.code
