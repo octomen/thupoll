@@ -69,7 +69,7 @@ class Namespace(_BaseModel):
 
     code = sa.Column(sa.String, primary_key=True)
     name = sa.Column(sa.String, nullable=False)
-    telegram_chat_id = sa.Column(sa.Integer, nullable=False, unique=True)
+    telegram_chat_id = sa.Column(sa.BigInteger, nullable=False, unique=True)
 
     def marshall(self) -> dict:
         return dict(
