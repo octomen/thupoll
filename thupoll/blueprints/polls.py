@@ -127,7 +127,9 @@ def set_themes(themes, poll_id):
         themes, name='order_no', fetcher=lambda x: x['order_no'])
 
     for theme in themes:
-        validators.theme_id(theme['theme_id'], must_exists=True)
+        theme_obj = validators.theme_id(theme['theme_id'], must_exists=True)
+        validators.theme_reporter_namespace(theme_obj)
+        validators.theme_poll_namespace(theme_obj, poll)
 
     # delete previous state of themes
     db.session.query(ThemePoll).filter_by(poll_id=poll_id).delete()
