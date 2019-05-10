@@ -97,6 +97,11 @@ def distinct(iterable: typing.Iterator, name, fetcher=lambda x: x):
         raise ValidationError('Duplication values of {}'.format(name))
 
 
+def dataful(seq_name: str, sequence: typing.Iterator):
+    if len(sequence) == 0:
+        raise ValidationError("Sequence {!r} is empty".format(seq_name))
+
+
 def theme_reporter_namespace(theme: models.Theme):
     if theme.namespace not in theme.reporter.namespaces:
         raise ValidationError(

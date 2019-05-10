@@ -15,7 +15,7 @@ class _Query(BaseQuery):  # out of the box it can `get_or_404` only
             abort(http_status)
         return obj
 
-    def one_or_404(self, ):
+    def one_or_404(self):
         return self.one_or_abort(http_status=404)
 
 
@@ -236,6 +236,11 @@ class Poll(_BaseModel):
         lazy='joined',
         order_by=lambda: ThemePoll.order_no,
     )
+    votes = relationship(
+        "Vote",
+        secondary="theme_poll",
+        lazy='joined',
+    )
 
     def marshall(self) -> dict:
         return dict(
@@ -244,7 +249,8 @@ class Poll(_BaseModel):
             meet_date=self.meet_date,
             created=self.created_date,
             updated=self.change_date,
-            themes=[theme.marshall() for theme in self.themes]
+            themes=[theme.marshall() for theme in self.themes],
+            votes=[vote.marshall() for vote in self.votes],
         )
 
 
@@ -316,10 +322,11 @@ class Vote(_BaseModel):
     def marshall(self) -> dict:
         return dict(
             id=self.id,
-            theme=self.theme.marshall(),
-            poll=self.poll.marshall(),
-            themepoll=self.themepoll.marshall(),
-            people=self.people.marshall(),
+            created=self.created_date,
+            updated=self.change_date,
+            people_id=self.people_id,
+            pole_id=self.themepoll.poll_id,
+            theme_id=self.themepoll.theme_id,
         )
 
 
@@ -355,3 +362,11 @@ class Session(_BaseModel):
     expire = sa.Column(sa.DateTime)
 
     people = relationship(People, lazy='joined')  # type: People
+
+    def marshall(self) -> dict:
+        return dict(
+            id=self.id,
+            value=self.value,
+            expire=self.expire,
+            people=self.people.marshall()
+        )
