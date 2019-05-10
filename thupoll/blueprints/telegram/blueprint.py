@@ -5,7 +5,6 @@ from http import HTTPStatus
 from flask import Blueprint, request, Response
 
 from thupoll.settings import env
-from thupoll.blueprints.telegram import logger
 from thupoll.blueprints.telegram.hook import TelegramHook
 from thupoll.blueprints.telegram.mount import mount
 
@@ -21,9 +20,5 @@ mount(webhook)
 @telegram_blueprint.route("/", strict_slashes=False, methods=["POST"])
 def handle():
     """Entrypoint for telegram api."""
-    try:
-        webhook.handle(request.json)
-    except Exception:
-        logger.exception("Dispatch message from telegram failed")
-        return Response(status=HTTPStatus.NOT_FOUND)
+    webhook.handle(request.json)
     return Response(status=HTTPStatus.OK)
