@@ -4,8 +4,8 @@ from telegram.chat import Chat
 from thupoll import validators
 from thupoll.fronturl import FrontUrl
 from thupoll.models import db
-from thupoll.telegram import logger
-from thupoll.telegram.auth import AuthAdapter, RegistrationAdapter
+from thupoll.telega import logger
+from thupoll.telega.auth import AuthAdapter, RegistrationAdapter
 
 
 class InviteHandler:
@@ -18,8 +18,7 @@ class InviteHandler:
     )
     LINK_TEMPLATE = "Привет, {name}! Твоя [ссылка]({link})"
 
-    def __init__(self, url, token_ttl_days):
-        self.url = url
+    def __init__(self, token_ttl_days):
         self.token_ttl_days = token_ttl_days
 
     def invite(self, bot, update, adapter=None, **kw):

@@ -1,14 +1,14 @@
-from thupoll.telegram.hook import TelegramHook
-from thupoll.telegram.handler import (
+from thupoll.telega.hook import TelegramHook
+from thupoll.telega.handler import (
     InviteHandler, ChatMembersHandler)
-from thupoll.telegram.filters import (
+from thupoll.telega.filters import (
     MemberJoinFilter, MemberLeftFilter)
 from thupoll.settings import env
 
 
 def mount(hook: TelegramHook):
     """Mount handlers to hook"""
-    invite_handler = InviteHandler(env.thupoll_url, env("TOKEN_TTL_DAYS", 10))
+    invite_handler = InviteHandler(env("TOKEN_TTL_DAYS", 10))
     hook.mount_command("invite", invite_handler.invite)
     hook.mount_command("start", invite_handler.invite)
 

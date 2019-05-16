@@ -1,10 +1,9 @@
 import dependency_injector.containers as containers
 import dependency_injector.providers as providers
 
-from thupoll.telegram import factories
+from thupoll.telega.components import Components as TComponents
 
 
 class Components(containers.DeclarativeContainer):
-    telegram_bot = providers.Singleton(factories.telegram_bot_factory)
-    telegram_hook = providers.Singleton(
-        factories.telegram_hook_factory, bot=telegram_bot)
+    telegram_bot = providers.Factory(TComponents.telegram_bot)
+    telegram_hook = providers.Factory(TComponents.telegram_hook)

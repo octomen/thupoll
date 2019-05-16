@@ -5,8 +5,8 @@ import telegram
 from unittest.mock import Mock
 
 from thupoll import models as md
-from thupoll.telegram.auth import RegistrationAdapter
-from thupoll.telegram.handler import ChatMembersHandler
+from thupoll.telega.auth import RegistrationAdapter
+from thupoll.telega.handler import ChatMembersHandler
 
 
 @pytest.fixture

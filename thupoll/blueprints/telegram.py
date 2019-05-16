@@ -5,7 +5,7 @@ from http import HTTPStatus
 from flask import Blueprint, request, Response
 
 from thupoll.components import Components
-from thupoll.telegram import logger
+from thupoll.telega import logger
 
 telegram_blueprint = Blueprint('telegram_bot', __name__)
 

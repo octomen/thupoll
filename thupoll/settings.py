@@ -24,8 +24,8 @@ class Environ(Env):
         return self('BOT_TELEGRAM_TOKEN', self.DEFAULT_TELEGRAM_TOKEN)
 
     @property
-    def bot_proxy_url(self):
-        return self('BOT_PROXY_URL', None)
+    def proxy_url(self):
+        return self('PROXY_URL', None)
 
     @property
     def root_path(self):

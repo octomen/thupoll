@@ -1,6 +1,6 @@
 import pytest
 
-from thupoll.telegram.auth import AuthAdapter
+from thupoll.telega.auth import AuthAdapter
 from thupoll import models as m
 
 

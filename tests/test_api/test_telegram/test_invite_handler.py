@@ -4,12 +4,12 @@ from unittest.mock import Mock
 
 from thupoll import models as md
 from thupoll.fronturl import FrontUrl
-from thupoll.telegram.handler import InviteHandler
+from thupoll.telega.handler import InviteHandler
 
 
 @pytest.fixture("function")
 def handler(faker):
-    return InviteHandler(faker.url(), faker.pyint())
+    return InviteHandler(faker.pyint())
 
 
 def test_not_exist_user(faker, handler):

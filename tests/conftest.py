@@ -79,7 +79,7 @@ class TestComponents(containers.DeclarativeContainer):
 
 
 @pytest.fixture
-def telgram_bot():
+def telegram_bot():
     return Components.telegram_bot()
 
 

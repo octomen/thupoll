@@ -4,7 +4,7 @@ from typing import Callable
 from telegram import Update, ext
 from telegram.ext import BaseFilter
 
-from thupoll.telegram import logger
+from thupoll.telega import logger
 
 
 class TelegramHook:
