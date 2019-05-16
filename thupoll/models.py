@@ -144,8 +144,8 @@ class PeopleNamespace(_BaseModel):
     def marshall(self) -> dict:
         return dict(
             people_id=self.people_id,
-            namespace_code=self.namespace_code,
-            role_id=self.role_id,
+            namespace=self.namespace.marshall(),
+            role=self.role.marshall(),
         )
 
 
@@ -197,7 +197,7 @@ class Theme(_BaseModel):
             title=self.title,
             description=self.description,
             author=self.author.marshall(),
-            reporter=self.reporter.marshall() if self.reporter else {},
+            reporter=self.reporter.marshall() if self.reporter else None,
             status=self.status.marshall(),
             created=self.created_date,
             updated=self.change_date,

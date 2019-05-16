@@ -119,4 +119,5 @@ class ChatMembersHandler:
                 text=self.GOODBYE.format(name=user.first_name),
                 parse_mode=telegram.ParseMode.MARKDOWN,
             )
+            db.session.commit()
             logger.info('remove %s from %s', user.username, namespace.code)

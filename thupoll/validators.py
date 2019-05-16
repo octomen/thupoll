@@ -4,7 +4,7 @@ from datetime import datetime
 from flask import abort, g
 from marshmallow.exceptions import ValidationError
 
-from thupoll import models
+from thupoll import models, controllers as ctl
 from thupoll.utils import assert_auth
 
 
@@ -150,12 +150,10 @@ def namespace_access(
     namespace = namespace_code(code, must_exists=True)
     # check permissions
     if g.people.role_id != models.Role.OCTOPUS:
-        people_namespace = models.db.session.query(
-            models.PeopleNamespace
-        ).filter_by(
-            people_id=g.people.id,
-            namespace_code=namespace.code,
-        ).one_or_abort(403)  # type: models.PeopleNamespace
+        people_namespace = ctl.peoplenamespace.get(
+            people=g.people, code=namespace.code)
+        if not people_namespace:
+            abort(403)
         # if needed admin permissions to namespace
         if admin and people_namespace.role_id != models.Role.OCTOPUS:
             abort(403)
