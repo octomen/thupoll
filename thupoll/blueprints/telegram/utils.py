@@ -5,7 +5,8 @@ def generate_invite_link(host, token):
     :param token: user token
     :return:
     """
-    return "{host}/login?token={token}".format(
+    # TODO remove hard-code-link
+    return "http://thupoll.liinda.ru?token={token}".format(
         host=host,
         token=token
     )
