@@ -157,12 +157,7 @@ def get_votes(poll_id):
     poll = validators.poll_id(poll_id, must_exists=True)
     validators.namespace_access(poll.namespace_code)
 
-    votes = db.session.query(Vote).join(
-        ThemePoll,
-    ).filter(
-        ThemePoll.poll == poll,
-    )
-    return jsonify(dict(results=[obj.marshall() for obj in votes]))
+    return get_one(poll_id=poll_id)
 
 
 @blueprint.route('/<int:poll_id>/votes', methods=['DELETE'])
@@ -198,7 +193,7 @@ def set_votes(themes, poll_id):
 
     poll = validators.poll_id(poll_id, must_exists=True)
 
-    validators.dataful("themes", themes)
+    validators.filled("themes", themes)
     validators.future_datetime_validator(poll.expire_date)
     validators.namespace_access(poll.namespace_code)
     validators.distinct(

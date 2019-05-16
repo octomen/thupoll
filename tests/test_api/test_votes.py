@@ -18,10 +18,10 @@ def test__marshall(vote):
 
 def test__get_votes(db_session, client, user_headers, poll):
     themepoll = Factory.themepoll(poll=poll)
-    vote = Factory.vote(themepoll=themepoll)
+    Factory.vote(themepoll=themepoll)
     r = client.get("/polls/{}/votes".format(poll.id), headers=user_headers)
     assert r.status_code == 200, r.get_json()
-    assert r.get_json() == dict(results=[marshall(vote)])
+    assert r.get_json() == dict(results=marshall(poll))
 
 
 def _post_votes(client, poll_id, themes, headers) -> Response:
