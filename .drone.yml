@@ -37,8 +37,8 @@ pipeline:
     image: appleboy/drone-ssh
     when:
       event: push
-      branch:
-        - master
+#      branch:
+#        - master
     host:
       from_secret: deploy_host
     username:
