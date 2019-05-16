@@ -88,4 +88,5 @@ class RegistrationAdapter(BaseAdapter):
             return False
 
         self.session.delete(people_namespace)
+        self.session.flush()
         return True
