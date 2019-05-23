@@ -5,6 +5,7 @@ from webargs import fields
 from webargs.flaskparser import use_kwargs, use_args
 
 from thupoll import validators
+from thupoll import controllers as ctl
 from thupoll.models import db, Poll, ThemePoll, Vote
 from thupoll.utils import for_auth
 
@@ -169,14 +170,10 @@ def del_votes(poll_id):
     validators.future_datetime_validator(poll.expire_date)
     validators.namespace_access(poll.namespace_code)
 
-    sq = db.session.query(Vote.id).join(ThemePoll).filter(
-        ThemePoll.poll_id == poll_id,
-        Vote.people_id == g.people.id,
-    ).subquery()
-
-    db.session.query(Vote).filter(
-        Vote.id.in_(sq),
-    ).delete(synchronize_session=False)
+    ctl.votes.delete_votes(
+        poll_id=poll_id,
+        people_id=g.people.id,
+    )
 
     return Response(status=200)
 
@@ -209,7 +206,10 @@ def set_votes(themes, poll_id):
         )
 
     # delete previous state of votes
-    del_votes(poll_id=poll_id)
+    ctl.votes.delete_votes(
+        poll_id=poll_id,
+        people_id=g.people.id,
+    )
 
     # create new state of themes
     for themepoll in themepolls:
