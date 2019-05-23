@@ -1,11 +1,12 @@
 import logging
-from flask import Blueprint, jsonify, abort, g
+from flask import Blueprint, jsonify, abort, g, Response
 from marshmallow import Schema
 from webargs import fields
 from webargs.flaskparser import use_kwargs, use_args
 
 from thupoll import validators
-from thupoll.models import db, Poll, ThemePoll
+from thupoll import controllers as ctl
+from thupoll.models import db, Poll, ThemePoll, Vote
 from thupoll.utils import for_auth
 
 
@@ -144,6 +145,82 @@ def set_themes(themes, poll_id):
 
     logger.info(
         'Poll %s. %s themes was set (%s)',
+        poll_id, len(themes), themes)
+
+    return get_one(poll_id=poll_id)
+
+
+@blueprint.route('/<int:poll_id>/votes', methods=['GET'])
+@for_auth
+def get_votes(poll_id):
+    logger.info('Votes for poll %s', poll_id)
+
+    poll = validators.poll_id(poll_id, must_exists=True)
+    validators.namespace_access(poll.namespace_code)
+
+    return get_one(poll_id=poll_id)
+
+
+@blueprint.route('/<int:poll_id>/votes', methods=['DELETE'])
+@for_auth
+def del_votes(poll_id):
+    logger.info('Delete votes for poll %s', poll_id)
+
+    poll = validators.poll_id(poll_id, must_exists=True)
+    validators.future_datetime_validator(poll.expire_date)
+    validators.namespace_access(poll.namespace_code)
+
+    ctl.votes.delete_votes(
+        poll_id=poll_id,
+        people_id=g.people.id,
+    )
+
+    return Response(status=200)
+
+
+class ThemeArg(Schema):
+    theme_id = fields.Int(required=True)
+
+
+@blueprint.route('/<int:poll_id>/votes', methods=['POST'])
+@for_auth
+@use_args(ThemeArg(many=True))
+def set_votes(themes, poll_id):
+    logger.info('Poll %s. Votes for themes %s', poll_id, themes)
+
+    poll = validators.poll_id(poll_id, must_exists=True)
+
+    validators.filled("themes", themes)
+    validators.future_datetime_validator(poll.expire_date)
+    validators.namespace_access(poll.namespace_code)
+    validators.distinct(
+        themes, name='theme_id', fetcher=lambda x: x['theme_id'])
+
+    themepolls = []
+    for theme in themes:
+        themepolls.append(
+            validators.themepoll(
+                theme_id=theme['theme_id'],
+                poll_id=poll_id,
+            ),
+        )
+
+    # delete previous state of votes
+    ctl.votes.delete_votes(
+        poll_id=poll_id,
+        people_id=g.people.id,
+    )
+
+    # create new state of themes
+    for themepoll in themepolls:
+        db.session.add(Vote(
+            themepoll_id=themepoll.id,
+            people_id=g.people.id,
+        ))
+    db.session.commit()
+
+    logger.info(
+        'Poll %s. %s votes was set (for themes %s)',
         poll_id, len(themes), themes)
 
     return get_one(poll_id=poll_id)
