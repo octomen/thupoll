@@ -51,7 +51,7 @@ class InviteHandler:
             chat_id=message.chat_id,
             text=self.LINK_TEMPLATE.format(
                 name=user.full_name,
-                link=FrontUrl.login(token),
+                link=FrontUrl.root(token),
             ),
             parse_mode=telegram.ParseMode.MARKDOWN,
             disable_web_page_preview=True,
@@ -118,4 +118,5 @@ class ChatMembersHandler:
                 text=self.GOODBYE.format(name=user.first_name),
                 parse_mode=telegram.ParseMode.MARKDOWN,
             )
+            db.session.commit()
             logger.info('remove %s from %s', user.username, namespace.code)

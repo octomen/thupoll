@@ -5,7 +5,6 @@ from http import HTTPStatus
 from flask import Blueprint, request, Response
 
 from thupoll.components import Components
-from thupoll.telega import logger
 
 telegram_blueprint = Blueprint('telegram_bot', __name__)
 
@@ -14,9 +13,5 @@ telegram_blueprint = Blueprint('telegram_bot', __name__)
 def handle():
     """Entrypoint for telegram api."""
     webhook = Components.telegram_hook()
-    try:
-        webhook.handle(request.json)
-    except Exception:
-        logger.exception("Dispatch message from telegram failed")
-        return Response(status=HTTPStatus.NOT_FOUND)
+    webhook.handle(request.json)
     return Response(status=HTTPStatus.OK)

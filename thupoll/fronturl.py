@@ -19,3 +19,7 @@ class FrontUrl:
     @classmethod
     def login(cls, token):
         return cls.urlunparse("/login", token=token)
+
+    @classmethod
+    def root(cls, token):
+        return cls.urlunparse("/", token=token)

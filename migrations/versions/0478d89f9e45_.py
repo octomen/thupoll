@@ -20,7 +20,7 @@ def upgrade():
     # alembic `alter_column` can't evaluate sql with USING statement
     op.execute('''
         ALTER TABLE people
-            ALTER COLUMN telegram_login TYPE INT USING telegram_login::integer;
+            ALTER COLUMN telegram_login TYPE BIGINT USING telegram_login::integer;
     ''')
 
 

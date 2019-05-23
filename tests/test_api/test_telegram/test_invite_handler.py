@@ -41,7 +41,7 @@ def test_generate_invite_link(handler, faker):
         chat_id=update.message.chat_id,
         text=handler.LINK_TEMPLATE.format(
             name=update.message.from_user.full_name,
-            link=FrontUrl.login(token)
+            link=FrontUrl.root(token)
         ),
         parse_mode=telegram.ParseMode.MARKDOWN,
         disable_web_page_preview=True,
