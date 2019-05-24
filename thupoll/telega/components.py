@@ -1,11 +1,10 @@
-import dependency_injector.containers as containers
-import dependency_injector.providers as providers
 from telegram import Bot
 from telegram.utils.request import Request
 
 from thupoll.settings import env
 from thupoll.telega.mount import mount
 from thupoll.telega.hook import TelegramHook
+from thupoll.utils import Singleton
 
 
 def _telegram_bot_factory():
@@ -16,9 +15,9 @@ def _telegram_bot_factory():
     return Bot(token, request=request)
 
 
-class Components(containers.DeclarativeContainer):
-    telegram_bot = providers.Singleton(_telegram_bot_factory)
-    telegram_hook = providers.Singleton(
-        lambda: mount(TelegramHook(bot=Components.telegram_bot)),
+class Components:
+    telegram_bot = Singleton(_telegram_bot_factory)
+    telegram_hook = Singleton(
+        lambda: mount(TelegramHook(bot=Components.telegram_bot())),
         bot=telegram_bot
     )

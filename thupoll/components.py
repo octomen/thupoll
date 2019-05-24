@@ -1,9 +1,7 @@
-import dependency_injector.containers as containers
-import dependency_injector.providers as providers
-
-from thupoll.telega.components import Components as TComponents
+from thupoll.telega import components as t_cmp
+from thupoll.utils import Factory
 
 
-class Components(containers.DeclarativeContainer):
-    telegram_bot = providers.Factory(TComponents.telegram_bot)
-    telegram_hook = providers.Factory(TComponents.telegram_hook)
+class Components:
+    telegram_bot = Factory(t_cmp.Components.telegram_bot)
+    telegram_hook = Factory(t_cmp.Components.telegram_hook)
