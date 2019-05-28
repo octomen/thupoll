@@ -1,11 +1,8 @@
 import datetime
 import pytest
 import random
-import dependency_injector.containers as containers
-import dependency_injector.providers as providers
 from functools import partial
 from freezegun import freeze_time
-from unittest.mock import Mock
 
 from thupoll.app_factory import init_app
 from thupoll.components import Components
@@ -73,9 +70,9 @@ def db_session(app):
 ##############
 
 
-@containers.override(Components)
-class TestComponents(containers.DeclarativeContainer):
-    telegram_bot = providers.Singleton(Mock)
+# @containers.override(Components)
+# class TestComponents(containers.DeclarativeContainer):
+#     telegram_bot = providers.Singleton(Mock)
 
 
 @pytest.fixture

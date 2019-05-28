@@ -4,7 +4,7 @@ from telegram.utils.request import Request
 from thupoll.settings import env
 from thupoll.telega.mount import mount
 from thupoll.telega.hook import TelegramHook
-from thupoll.utils import Singleton
+from thupoll.utils import di
 
 
 def _telegram_bot_factory():
@@ -16,8 +16,8 @@ def _telegram_bot_factory():
 
 
 class Components:
-    telegram_bot = Singleton(_telegram_bot_factory)
-    telegram_hook = Singleton(
+    telegram_bot = di.Singleton(_telegram_bot_factory)
+    telegram_hook = di.Singleton(
         lambda: mount(TelegramHook(bot=Components.telegram_bot())),
         bot=telegram_bot
     )

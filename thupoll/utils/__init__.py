@@ -56,31 +56,3 @@ class CustomJSONEncoder(JSONEncoder):
             return o.isoformat()
 
         return super().default(o)
-
-
-class BaseProvider:
-    def update_kw(self, kwargs):
-        kw = dict(self.kw)
-        kw.update(kwargs)
-        return kw
-
-
-class Factory(BaseProvider):
-    def __init__(self, provider, **kw):
-        self.provider = provider
-        self.kw = kw
-
-    def __call__(self, **kwargs):
-        return self.provider(**self.update_kw(kwargs))
-
-
-class Singleton(BaseProvider):
-    def __init__(self, provider, **kw):
-        self._instance = _sentinel
-        self.provider = provider
-        self.kw = kw
-
-    def __call__(self, **kwargs):
-        if self._instance == _sentinel:
-            self._instance = self.callable(**self.update_kw(kwargs))
-        return self._instance
