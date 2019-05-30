@@ -15,7 +15,7 @@ def _telegram_bot_factory():
     return Bot(token, request=request)
 
 
-class Components:
+class Components(di.Container):
     telegram_bot = di.Singleton(_telegram_bot_factory)
     telegram_hook = di.Singleton(
         lambda: mount(TelegramHook(bot=Components.telegram_bot())),
