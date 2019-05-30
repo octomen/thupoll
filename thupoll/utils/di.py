@@ -19,7 +19,8 @@ class BaseProvider:
         self._override.append(provider)
 
     def reset(self):
-        self._override.pop()
+        if self._override:
+            self._override.pop()
 
     def update_kw(self, kwargs):
         kw = dict(self._kw)
@@ -48,3 +49,18 @@ class Singleton(BaseProvider):
             self._instance = self._provider(
                 **prepare_providers(self.update_kw(kwargs)))
         return self._instance
+
+
+class Container:
+    @classmethod
+    def override(cls, other):
+        for k, v in other.__dict__.items():
+            if isinstance(v, BaseProvider):
+                getattr(cls, k).override(v)
+        return other
+
+    @classmethod
+    def reset(cls):
+        for k, v in cls.__dict__.items():
+            if isinstance(v, BaseProvider):
+                v.reset()

@@ -3,6 +3,7 @@ import pytest
 import random
 from functools import partial
 from freezegun import freeze_time
+from unittest.mock import Mock
 
 from thupoll.app_factory import init_app
 from thupoll.components import Components
@@ -11,6 +12,7 @@ from thupoll.models import (
     ThemePoll, Namespace, PeopleNamespace,
 )
 from thupoll.settings import env
+from thupoll.utils import di
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -70,9 +72,9 @@ def db_session(app):
 ##############
 
 
-# @containers.override(Components)
-# class TestComponents(containers.DeclarativeContainer):
-#     telegram_bot = providers.Singleton(Mock)
+@Components.override
+class TestComponents(di.Container):
+    telegram_bot = di.Singleton(Mock)
 
 
 @pytest.fixture
