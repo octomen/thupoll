@@ -9,7 +9,7 @@ from thupoll.app_factory import init_app
 from thupoll.components import Components
 from thupoll.models import (
     db, freeze_tables, People, Role, Theme, Session, Token, Poll,
-    ThemePoll, Namespace, PeopleNamespace,
+    ThemePoll, Namespace, PeopleNamespace, Vote
 )
 from thupoll.settings import env
 from thupoll.utils import di
@@ -207,6 +207,14 @@ def poll(db_session, peoplenamespace):
 def themepoll(db_session, theme, poll):
     obj = ThemePoll(
         theme_id=theme.id, poll_id=poll.id, order_no=random.randint(1, 100))
+    db_session.add(obj)
+    db_session.commit()
+    yield obj
+
+
+@pytest.fixture(scope="function")
+def vote(db_session, themepoll, people):
+    obj = Vote(themepoll_id=themepoll.id, people_id=people.id)
     db_session.add(obj)
     db_session.commit()
     yield obj
