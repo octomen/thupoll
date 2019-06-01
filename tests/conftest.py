@@ -51,11 +51,18 @@ def headers_factory():
     return _headers
 
 
+@pytest.fixture()
+def engine(app):
+    engine = db.engine
+    yield engine
+    engine.dispose()
+
+
 @pytest.fixture(scope='function', autouse=True)
-def truncate(db_session):
+def truncate(engine):
     for table in db.metadata.tables:
         if table not in freeze_tables:
-            db.engine.execute('TRUNCATE TABLE {} CASCADE'.format(table))
+            engine.execute('TRUNCATE TABLE {} CASCADE'.format(table))
 
 
 @pytest.fixture
