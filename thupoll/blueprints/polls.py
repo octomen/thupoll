@@ -229,9 +229,9 @@ def set_votes(themes, poll_id):
     return get_one(poll_id=poll_id)
 
 
-@blueprint.route('/<int:poll_id>/alarms', methods=['POST'])
+@blueprint.route('/<int:poll_id>/publish', methods=['POST'])
 @for_auth
-def alarm(poll_id):
+def publish(poll_id):
     poll = validators.poll_id(poll_id)
     validators.namespace_access(poll.namespace.code, admin=True)
 

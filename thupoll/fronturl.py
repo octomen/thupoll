@@ -5,7 +5,7 @@ from thupoll.settings import env
 
 class FrontUrl:
     SCHEME = "https"
-    HOSTNAME = env.thupoll_url
+    HOSTNAME = env.thui_url
 
     @classmethod
     def urlunparse(cls, path, **kw):

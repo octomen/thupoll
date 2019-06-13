@@ -16,6 +16,10 @@ class Environ(Env):
         return self("THUPOLL_URL", self.DEFAULT_URL)
 
     @property
+    def thui_url(self):
+        return self("THUI_URL", self.DEFAULT_URL)
+
+    @property
     def log_level(self):
         return self('LOG_LEVEL', 'INFO')
 

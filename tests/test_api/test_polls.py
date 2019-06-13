@@ -211,7 +211,7 @@ def test__delete__correct_by_admin(client, admin_headers):
     assert db.session.query(Poll).count() == 0
 
 
-def test__poll_alarm__correct(client, admin_headers, poll):
+def test__poll_publish__correct(client, admin_headers, poll):
     namespace = Factory.namespace()
     poll = Factory.poll(namespace=namespace)
     people = Factory.peoplenamespace(
@@ -220,16 +220,16 @@ def test__poll_alarm__correct(client, admin_headers, poll):
     ).people
     auth = Factory.authheader(people)
     r = client.post(
-        "/polls/%s/alarms" % poll.id,
+        "/polls/%s/publish" % poll.id,
         headers=auth,
     )
     assert r.status_code == 200, r.get_json()
 
 
-def test__poll_alarm__not_exist_poll(client, faker, user_headers):
+def test__poll_publish__not_exist_poll(client, faker, user_headers):
     poll_id = faker.pyint()
     r = client.post(
-        "/polls/%s/alarms" % poll_id,
+        "/polls/%s/publish" % poll_id,
         headers=user_headers,
     )
     assert r.status_code == 422, r.get_json()
@@ -237,9 +237,9 @@ def test__poll_alarm__not_exist_poll(client, faker, user_headers):
         '_schema': ["Poll with id=%s does not exists" % poll_id]}
 
 
-def test__poll_alarm__not_admin(client, faker, poll, user_headers):
+def test__poll_publish__not_admin(client, faker, poll, user_headers):
     r = client.post(
-        "/polls/%s/alarms" % poll.id,
+        "/polls/%s/publish" % poll.id,
         headers=user_headers,
     )
     assert r.status_code == 403, r.get_json()

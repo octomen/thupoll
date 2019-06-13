@@ -1,6 +1,3 @@
-from thupoll.utils import _sentinel
-
-
 class BaseProvider:
     def __init__(self, provider, **kw):
         self._override = []
@@ -23,9 +20,7 @@ class BaseProvider:
             self._override.pop()
 
     def update_kw(self, kwargs):
-        kw = dict(self._kw)
-        kw.update(kwargs)
-        return kw
+        return {**self._kw, **kwargs}
 
 
 def prepare_providers(kwargs):
@@ -42,10 +37,10 @@ class Factory(BaseProvider):
 class Singleton(BaseProvider):
     def __init__(self, provider, **kw):
         super().__init__(provider, **kw)
-        self._instance = _sentinel
+        self._instance = None
 
     def _run(self, **kwargs):
-        if self._instance == _sentinel:
+        if self._instance is None:
             self._instance = self._provider(
                 **prepare_providers(self.update_kw(kwargs)))
         return self._instance
@@ -61,6 +56,6 @@ class Container:
 
     @classmethod
     def reset(cls):
-        for k, v in cls.__dict__.items():
+        for v in cls.__dict__.values():
             if isinstance(v, BaseProvider):
                 v.reset()

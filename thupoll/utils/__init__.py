@@ -10,9 +10,6 @@ from webargs.flaskparser import use_args
 from thupoll.models import db, Role, Session
 
 
-_sentinel = object()
-
-
 def check_auth(*roles):
     def wrapper(func):
         @wraps(func)
