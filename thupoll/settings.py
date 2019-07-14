@@ -35,6 +35,11 @@ class Environ(Env):
     def env_path(self):
         return pathlib.Path(__file__).parent
 
+    @property
+    def telegram_url_pfx(self):
+        prefix = self('TELEGRAM_URL_PREFIX', 'telegram')
+        return '/{}'.format(prefix)
+
 
 env = Environ()
 
